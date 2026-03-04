@@ -414,7 +414,23 @@ header{background:var(--ink);padding:0 24px;display:flex;align-items:center;gap:
     </div>
   </div>
   <div class="card">
-    <div class="card-hd"><span class="card-title">テーブル表示件数</span></div>
+    <div class="card-hd"><span class="card-title">📅 スケジュール表の部署割り当て</span><span class="card-badge">index.html</span></div>
+    <div class="card-body">
+      <div style="font-size:.75rem;color:var(--ink-muted);margin-bottom:12px">ポータルの「今週の生産スケジュール」「今週の入荷スケジュール」にどの部署を表示するか設定します。</div>
+      <div class="field-row">
+        <div class="field">
+          <label>🏭 生産スケジュール（複数選択可）</label>
+          <div id="ps-prodKeys" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+          <div class="hint">加工・生産系の部署を選択</div>
+        </div>
+        <div class="field">
+          <label>🚚 入荷スケジュール（複数選択可）</label>
+          <div id="ps-arriKeys" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+          <div class="hint">入荷・配送系の部署を選択</div>
+        </div>
+      </div>
+    </div>
+  </div>
     <div class="card-body">
       <div class="field-row">
         <div class="field"><label>今週の納期テーブル 初期表示件数</label><input type="number" id="ps-weekN" value="0" min="0" max="100"><div class="hint">0 = 全件表示（推奨）</div></div>
@@ -497,7 +513,7 @@ header{background:var(--ink);padding:0 24px;display:flex;align-items:center;gap:
 
 <!-- 部署管理モーダル -->
 <div id="deptMgrOverlay" style="display:none;position:fixed;inset:0;background:rgba(14,21,33,.55);z-index:500;backdrop-filter:blur(3px)" onclick="if(event.target===this)closeDeptMgr()"></div>
-<div id="deptMgrModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:501;background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.25);width:min(700px,96vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column">
+<div id="deptMgrModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:501;background:#fff;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.25);width:min(700px,96vw);max-height:88vh;overflow:hidden;flex-direction:column">
   <div style="padding:18px 22px 14px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:10px">
     <div style="font-size:1rem;font-weight:900;letter-spacing:-.5px;flex:1">🏢 部署の追加・削除・並び替え</div>
     <button onclick="closeDeptMgr()" style="border:none;background:none;font-size:1.2rem;cursor:pointer;color:var(--ink-muted)">✕</button>
@@ -685,6 +701,8 @@ function saveAll(){
 }
 
 function savePortal(){
+  const prodKeys = [...document.querySelectorAll('#ps-prodKeys input:checked')].map(c=>c.value);
+  const arriKeys = [...document.querySelectorAll('#ps-arriKeys input:checked')].map(c=>c.value);
   const ps={
     sysname: document.getElementById('ps-sysname').value,
     syssub:  document.getElementById('ps-syssub').value,
@@ -694,9 +712,52 @@ function savePortal(){
     lineHeight: parseInt(document.getElementById('pf-lh').value)||16,
     fontFamily: document.getElementById('pf-family').value,
     fontWeight: document.getElementById('pf-weight').value,
+    prodKeys: prodKeys.length ? prodKeys : ['kakouka','namaba','anba'],
+    arriKeys: arriKeys.length ? arriKeys : ['haisouka'],
   };
   localStorage.setItem(PORTAL_KEY,JSON.stringify(ps));
   tk('💾 ポータル設定を保存しました。index.htmlをリロードすると反映されます。');
+}
+
+// スケジュール割り当てチェックボックスを生成
+function renderSchedKeys(){
+  const raw = localStorage.getItem(PORTAL_KEY);
+  let saved = {};
+  try { if(raw) saved = JSON.parse(raw); } catch{}
+  const prodKeys = saved.prodKeys || ['kakouka','namaba','anba'];
+  const arriKeys = saved.arriKeys || ['haisouka'];
+
+  ['prod','arri'].forEach(type => {
+    const el = document.getElementById(`ps-${type}Keys`); if(!el) return;
+    el.innerHTML = KEYS.filter(k=>k!=='kochocho').map(k=>{
+      const c = CFG[k]; if(!c) return '';
+      const checked = (type==='prod'?prodKeys:arriKeys).includes(k) ? 'checked' : '';
+      return `<label style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:.76rem;font-weight:600;background:#fff;transition:all .15s" id="sched-lbl-${type}-${k}">
+        <input type="checkbox" value="${k}" ${checked} style="accent-color:var(--accent)" onchange="updateSchedLabel('${type}','${k}',this.checked)">
+        ${c.icon} ${c.name}
+      </label>`;
+    }).join('');
+    // 初期スタイル反映
+    KEYS.filter(k=>k!=='kochocho').forEach(k=>{
+      const inp = el.querySelector(`input[value="${k}"]`);
+      const lbl = document.getElementById(`sched-lbl-${type}-${k}`);
+      if(inp && lbl) updateSchedLabel(type, k, inp.checked);
+    });
+  });
+}
+
+function updateSchedLabel(type, k, checked){
+  const lbl = document.getElementById(`sched-lbl-${type}-${k}`); if(!lbl) return;
+  const c = CFG[k]; if(!c) return;
+  if(checked){
+    lbl.style.borderColor = c.color;
+    lbl.style.background  = c.pale || '#f0f4ff';
+    lbl.style.color       = c.color;
+  } else {
+    lbl.style.borderColor = 'var(--border)';
+    lbl.style.background  = '#fff';
+    lbl.style.color       = 'var(--ink)';
+  }
 }
 
 function saveLabels(){
@@ -760,6 +821,7 @@ function showPg(id, el){
   if(id==='data') renderStorageInfo();
   if(id==='labels') buildLabelEditor();
   if(id==='font') applyFontFormValues();
+  if(id==='portal') renderSchedKeys();
 }
 
 // ════ OVERVIEW ════
