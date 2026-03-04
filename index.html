@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>発注管理システム — ポータル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0e1521;--ink-soft:#2a3a50;--ink-muted:#5a7080;
+  --paper:#f2efe8;--paper-dim:#e5e1d8;--paper-card:#faf8f3;
+  --accent:#1a56db;--accent-pale:#dce8ff;
+  --green:#147a4f;--green-pale:#d3f0e4;
+  --amber:#b45309;--amber-pale:#fde8c3;
+  --red:#b91c1c;--red-pale:#fee2e2;
+  --purple:#6d28d9;--purple-pale:#ede9fe;
+  --border:#d8d3c8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:'Noto Sans JP',sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6}
+
+header{background:var(--ink);padding:0 36px;display:flex;align-items:center;gap:14px;border-bottom:3px solid var(--accent);position:sticky;top:0;z-index:50}
+.hdr-logo{display:flex;align-items:center;gap:11px;padding:14px 0}
+.hdr-logo-icon{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.hdr-logo-text{font-size:.97rem;font-weight:900;color:#fff;letter-spacing:-1px}
+.hdr-logo-sub{font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase}
+.hdr-spacer{flex:1}
+.hdr-sync{display:flex;align-items:center;gap:6px;font-size:.7rem;color:rgba(255,255,255,.45);font-weight:600}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#34d399;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hdr-btn{padding:6px 13px;border:1.5px solid rgba(255,255,255,.15);border-radius:7px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.hdr-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+
+.hero{background:var(--ink);padding:38px 36px 42px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(26,86,219,.18),transparent);pointer-events:none}
+.hero-inner{max-width:1160px;margin:0 auto}
+.hero-label{font-size:.62rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.32);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.hero-label::before{content:'';width:18px;height:1px;background:rgba(255,255,255,.3)}
+.hero-title{font-size:1.8rem;font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.1;margin-bottom:7px}
+.hero-title span{color:var(--accent)}
+.hero-sub{font-size:.82rem;color:rgba(255,255,255,.48);max-width:440px;line-height:1.7}
+.hero-stats{display:flex;gap:26px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);flex-wrap:wrap}
+.hero-stat{display:flex;flex-direction:column;gap:2px}
+.hero-stat-num{font-size:1.45rem;font-weight:900;letter-spacing:-1.5px;color:#fff;font-family:'DM Mono',monospace}
+.hero-stat-lbl{font-size:.63rem;color:rgba(255,255,255,.38);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.hero-stat-sub{font-size:.61rem;font-weight:700}
+.t-ok{color:#34d399}.t-warn{color:#fbbf24}.t-alert{color:#f87171}
+
+.container{max-width:1160px;margin:0 auto;padding:30px 36px 60px}
+.sec-hd{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.sec-title{font-size:.86rem;font-weight:900;color:var(--ink);letter-spacing:-.5px;white-space:nowrap}
+.sec-line{flex:1;height:1.5px;background:var(--border)}
+.sec-sub{font-size:.67rem;color:var(--ink-muted);font-weight:600;white-space:nowrap}
+
+/* DEPT GRID */
+.dept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:30px}
+.dept-card{background:var(--paper-card);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .22s;text-decoration:none;color:inherit;display:flex;flex-direction:column}
+.dept-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(14,21,33,.11);border-color:var(--accent)}
+.dc-accent{height:4px}
+.dc-body{padding:16px 16px 12px;flex:1;display:flex;flex-direction:column;gap:10px}
+.dc-top{display:flex;align-items:flex-start;gap:10px}
+.dc-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0}
+.dc-name{font-size:.93rem;font-weight:900;color:var(--ink);letter-spacing:-.5px;margin-bottom:2px}
+.dc-desc{font-size:.69rem;color:var(--ink-muted);line-height:1.45}
+.dc-stats{display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
+.dcs{flex:1;padding:6px 0;text-align:center;border-right:1.5px solid var(--border)}
+.dcs:last-child{border-right:none}
+.dcs-n{font-size:.88rem;font-weight:900;letter-spacing:-1px;font-family:'DM Mono',monospace}
+.dcs-l{font-size:.54rem;color:var(--ink-muted);font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.dc-alert{display:flex;align-items:center;gap:6px;padding:6px 11px;background:var(--red-pale);border-top:1px solid rgba(185,28,28,.15);font-size:.67rem;font-weight:700;color:var(--red)}
+.dc-alert.warn{background:var(--amber-pale);color:var(--amber);border-top-color:rgba(180,83,9,.15)}
+.dc-alert.ok{background:var(--green-pale);color:var(--green);border-top-color:rgba(20,122,79,.15)}
+.dc-alert.mgr{background:#f3f4f6;color:#374151;border-top-color:#e5e7eb}
+.dc-footer{padding:8px 16px;background:var(--paper);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dc-open{font-size:.71rem;font-weight:800}
+.dc-updated{font-size:.63rem;color:var(--ink-muted)}
+
+/* TABLE CARD */
+.tbl-card{background:var(--paper-card);border:1.5px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:28px}
+.tbl-hd{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1.5px solid var(--border);background:var(--paper);flex-wrap:wrap;gap:7px}
+.tbl-title{font-size:.84rem;font-weight:800;color:var(--ink);letter-spacing:-.5px;flex:1}
+.ob{font-size:.64rem;font-weight:700;padding:3px 9px;border-radius:99px}
+.ob-r{background:var(--red-pale);color:var(--red)}
+.ob-a{background:var(--amber-pale);color:var(--amber)}
+.ob-b{background:var(--accent-pale);color:var(--accent)}
+.ob-g{background:var(--green-pale);color:var(--green)}
+
+.tbl{width:100%;border-collapse:collapse}
+.tbl thead th{padding:8px 13px;font-size:.62rem;font-weight:800;color:var(--ink-muted);letter-spacing:.8px;text-transform:uppercase;border-bottom:1.5px solid var(--border);text-align:left;white-space:nowrap;background:var(--paper)}
+.dg td{padding:5px 13px;font-size:.62rem;font-weight:800;letter-spacing:.7px;text-transform:uppercase;background:var(--paper-dim);color:var(--ink-muted);border-top:1px solid var(--border);border-bottom:1px solid var(--paper-dim)}
+.dg.over td{background:rgba(185,28,28,.07);color:var(--red)}
+.dg.today-r td{background:rgba(180,83,9,.07);color:var(--amber)}
+.tbl .dr{border-bottom:1px solid var(--paper-dim);cursor:pointer;transition:background .12s}
+.tbl .dr:hover{background:var(--accent-pale)}
+.tbl td{padding:8px 13px;font-size:.78rem;vertical-align:middle}
+.mono{font-family:'DM Mono',monospace;font-size:.72rem}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:.62rem;font-weight:800}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%}
+.bp{background:var(--amber-pale);color:var(--amber)}.bp::before{background:var(--amber)}
+.bo{background:var(--accent-pale);color:#0e3a99}.bo::before{background:var(--accent)}
+.bd{background:var(--green-pale);color:var(--green)}.bd::before{background:var(--green)}
+.bl{background:var(--red-pale);color:var(--red)}.bl::before{background:var(--red)}
+.bc{background:var(--purple-pale);color:var(--purple)}.bc::before{background:var(--purple)}
+.dtag{display:inline-block;font-size:.63rem;font-weight:700;padding:2px 7px;border-radius:6px;border:1.5px solid;background:transparent;white-space:nowrap}
+.db{display:inline-block;font-size:.64rem;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap}
+.d-ov{background:var(--red-pale);color:var(--red)}
+.d-td{background:var(--amber-pale);color:var(--amber)}
+.d-nr{background:var(--amber-pale);color:var(--amber)}
+.d-sn{background:var(--accent-pale);color:var(--accent)}
+.d-ok{background:var(--green-pale);color:var(--green)}
+.dlt{font-size:.6rem;font-weight:800;padding:1px 5px;border-radius:4px}
+.dl-h{background:var(--amber-pale);color:var(--amber)}
+.dl-c{background:var(--purple-pale);color:var(--purple)}
+
+.show-more{width:100%;padding:9px;background:transparent;border:none;border-top:1.5px solid var(--border);color:var(--ink-muted);font-size:.71rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px}
+.show-more:hover{background:var(--paper-dim);color:var(--ink)}
+
+.side-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:28px}
+.side-card{background:var(--paper-card);border:1.5px solid var(--border);border-radius:11px;overflow:hidden}
+.side-hd{display:flex;align-items:center;gap:7px;padding:10px 13px;border-bottom:1.5px solid var(--border);font-size:.78rem;font-weight:800}
+.side-body{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.ni{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:7px;background:var(--paper);border:1px solid var(--border)}
+.ni-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ni-text{flex:1;font-size:.73rem;line-height:1.5}
+.ni-tag{font-size:.61rem;font-weight:700;padding:1px 6px;border-radius:4px;background:var(--paper-dim);color:var(--ink-soft);white-space:nowrap;flex-shrink:0}
+.ni-empty{text-align:center;padding:18px;font-size:.74rem;color:var(--ink-muted)}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:.76rem;font-weight:600;display:none;align-items:center;gap:8px;box-shadow:0 8px 28px rgba(0,0,0,.22);z-index:300;animation:tin .28s ease}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-logo">
+    <div class="hdr-logo-icon">🏭</div>
+    <div>
+      <div class="hdr-logo-text" id="sysName">発注管理システム</div>
+      <div class="hdr-logo-sub" id="sysSub">Order Management Portal</div>
+    </div>
+  </div>
+  <div class="hdr-spacer"></div>
+  <div class="hdr-sync"><div class="sync-dot"></div>Google同期済み · <span id="syncTime"></span></div>
+  <a class="hdr-btn" href="config.html">⚙️ 設定管理</a>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">ポータルトップ</div>
+    <div class="hero-title">部署別 <span>発注管理</span> ポータル</div>
+    <div class="hero-sub">各部署の発注状況をひとつの画面で確認できます。</div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num" id="hs-total">—</div><div class="hero-stat-lbl">全社発注件数</div><div class="hero-stat-sub t-ok" id="hs-t1">—</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="hs-late">—</div><div class="hero-stat-lbl">納期超過</div><div class="hero-stat-sub t-alert" id="hs-t2">—</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="hs-pend">—</div><div class="hero-stat-lbl">確定待ち</div><div class="hero-stat-sub t-warn">メーカー返答待ち</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="hs-done">—</div><div class="hero-stat-lbl">完了件数</div><div class="hero-stat-sub t-ok" id="hs-t4">—</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="hs-week">—</div><div class="hero-stat-lbl">今週の納期</div><div class="hero-stat-sub t-warn" id="hs-t5">—</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 部署一覧 -->
+  <div class="sec-hd">
+    <div class="sec-title">📂 部署一覧</div>
+    <div class="sec-line"></div>
+    <div class="sec-sub">クリックで各部署の発注管理ページへ</div>
+  </div>
+  <div class="dept-grid" id="deptGrid"></div>
+
+  <!-- ① 今週の生産スケジュール（加工課・生場・餡場） -->
+  <div class="sec-hd">
+    <div class="sec-title">🏭 今週の生産スケジュール</div>
+    <div class="sec-line"></div>
+    <div class="sec-sub" id="weekRangeLabel"></div>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-hd">
+      <span class="tbl-title">加工課・生場・餡場 — 今週の納期（確定・希望）</span>
+      <span class="ob ob-a" id="prod-today" style="display:none"></span>
+      <span class="ob ob-b" id="prod-week" style="display:none"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr>
+          <th>日付</th><th>部署</th><th>商品名</th><th>発注先</th>
+          <th>希望納期</th><th>確定納期</th><th>時間帯</th><th>種別</th><th>残日数</th><th>ステータス</th>
+        </tr></thead>
+        <tbody id="prodBody"></tbody>
+      </table>
+    </div>
+    <button class="show-more" id="prodMoreBtn" onclick="showMoreProd()" style="display:none">
+      ▼ さらに表示（<span id="prodMoreCnt">0</span>件）
+    </button>
+  </div>
+
+  <!-- ② 今週の入荷スケジュール（配送課） -->
+  <div class="sec-hd">
+    <div class="sec-title">🚚 今週の入荷スケジュール</div>
+    <div class="sec-line"></div>
+    <div class="sec-sub" id="arriRangeLabel"></div>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-hd">
+      <span class="tbl-title">配送課 — 今週の納期（確定・希望）</span>
+      <span class="ob ob-a" id="arri-today" style="display:none"></span>
+      <span class="ob ob-b" id="arri-week" style="display:none"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr>
+          <th>日付</th><th>商品名</th><th>発注先</th>
+          <th>希望納期</th><th>確定納期</th><th>時間帯</th><th>種別</th><th>残日数</th><th>ステータス</th>
+        </tr></thead>
+        <tbody id="arriBody"></tbody>
+      </table>
+    </div>
+    <button class="show-more" id="arriMoreBtn" onclick="showMoreArri()" style="display:none">
+      ▼ さらに表示（<span id="arriMoreCnt">0</span>件）
+    </button>
+  </div>
+
+  <!-- ② 要対応 -->
+  <div class="sec-hd">
+    <div class="sec-title">🚨 全部署：要対応の発注</div>
+    <div class="sec-line"></div>
+    <div class="sec-sub">納期超過・希望日経過で確定未入力</div>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-hd">
+      <span class="tbl-title">超過・未確定一覧</span>
+      <span class="ob ob-r" id="alertBadge">0件</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>部署</th><th>商品名</th><th>発注先</th><th>希望納期</th><th>確定納期</th><th>超過日数</th><th>ステータス</th></tr></thead>
+        <tbody id="alertBody"></tbody>
+      </table>
+    </div>
+    <button class="show-more" id="alertMoreBtn" onclick="showMoreAlert()" style="display:none">
+      ▼ さらに表示（<span id="alertMoreCnt">0</span>件）
+    </button>
+  </div>
+
+  <!-- ③ 最新更新 + 来週以降 -->
+  <div class="side-grid">
+    <div class="side-card">
+      <div class="side-hd">🔔 最新の更新（発注日順）</div>
+      <div class="side-body" id="recentBody"></div>
+    </div>
+    <div class="side-card">
+      <div class="side-hd">📌 来週以降の納期予定</div>
+      <div class="side-body" id="futureBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// ★★★ ポータルのデフォルトデータ定義 ★★★
+//   config.html で保存した設定が localStorage に存在する場合、
+//   そちらの設定（名前・アイコン・色・説明）で上書きされます。
+// ════════════════════════════════════════════════════════════
+
+const DEFAULT_DEPTS = [
+  {
+    key:'haisouka', name:'配送課', icon:'📦', href:'haisouka.html',
+    desc:'段ボール・袋・シール・包装資材の発注管理',
+    color:'#1a56db', pale:'#dce8ff', gFrom:'#1a56db', gTo:'#3b82f6',
+    lastUpdate:'—', orders:[]
+  },
+  {
+    key:'kakouka', name:'加工課', icon:'⚙️', href:'kakouka.html',
+    desc:'加工用資材・副資材・消耗品の発注管理',
+    color:'#147a4f', pale:'#d3f0e4', gFrom:'#147a4f', gTo:'#10b981',
+    lastUpdate:'—', orders:[]
+  },
+  {
+    key:'namaba', name:'生場', icon:'🌾', href:'namaba.html',
+    desc:'原材料・生素材・鮮度管理資材の発注',
+    color:'#b45309', pale:'#fde8c3', gFrom:'#b45309', gTo:'#f59e0b',
+    lastUpdate:'—', orders:[]
+  },
+  {
+    key:'anba', name:'餡場', icon:'🫘', href:'anba.html',
+    desc:'餡用原料・添加物・容器資材の発注管理',
+    color:'#7c3aed', pale:'#ede9fe', gFrom:'#7c3aed', gTo:'#a78bfa',
+    lastUpdate:'—', orders:[]
+  },
+  {
+    key:'jimusho', name:'事務所', icon:'🗂️', href:'jimusho.html',
+    desc:'事務用品・備品・OA機器消耗品の発注管理',
+    color:'#0891b2', pale:'#cffafe', gFrom:'#0891b2', gTo:'#22d3ee',
+    lastUpdate:'—', orders:[]
+  },
+  {
+    key:'kochocho', name:'工場長', icon:'👷', href:'kochocho.html',
+    desc:'全部署の発注閲覧・承認・全体管理（統合ビュー）',
+    color:'#374151', pale:'#f3f4f6', gFrom:'#374151', gTo:'#9ca3af',
+    lastUpdate:'リアルタイム', orders:[]
+  },
+];
+
+// ════ localStorage から設定を読み込んでデフォルトを上書き ════
+const CFG_KEY = 'hanbai_cfg_v2';
+const PORTAL_KEY = 'hanbai_portal_v1';
+
+// ポータル設定（表示件数など）
+let PORTAL_CFG = { sysname:'発注管理システム', syssub:'Order Management Portal', weekN:0, alertN:8 };
+try {
+  const ps = localStorage.getItem(PORTAL_KEY);
+  if (ps) { PORTAL_CFG = {...PORTAL_CFG, ...JSON.parse(ps)}; }
+} catch {}
+
+// 部署設定
+const DEPTS = DEFAULT_DEPTS.map(d => {
+  try {
+    const raw = localStorage.getItem(CFG_KEY);
+    if (!raw) return d;
+    const all = JSON.parse(raw);
+    const saved = all[d.key];
+    if (!saved) return d;
+    // 基本情報を上書き（ordersはlocalStorageには保存しないのでそのまま）
+    return {
+      ...d,
+      name:  saved.name  || d.name,
+      icon:  saved.icon  || d.icon,
+      desc:  saved.desc  || d.desc,
+      color: saved.color || d.color,
+      pale:  saved.pale  || d.pale,
+      href:  saved.href  || d.href,
+    };
+  } catch { return d; }
+});
+
+// システム名反映
+document.getElementById('sysName').textContent = PORTAL_CFG.sysname;
+document.getElementById('sysSub').textContent  = PORTAL_CFG.syssub;
+
+// ════════════════════════════════════════════════════════════
+// ☁️  Phase 2: GAS から全部署の発注データを一括取得
+// ════════════════════════════════════════════════════════════
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz37m0Ruf78s0eKfmRi5R2fomLdHe7DVjQ51OoyYntKyQ59lqN4B6JEAtk21CzX-p86ew/exec';
+
+// 全発注フラット配列（非同期で後から埋める）
+let ALL_ORDERS = [];
+
+function rebuildAllOrders(){
+  ALL_ORDERS.length = 0;
+  DEPTS.forEach(d => {
+    if(d.key === 'kochocho') return; // 工場長は集約ビューのため除外（各部署データで表示）
+    d.orders.forEach(o =>
+      ALL_ORDERS.push({...o, _dept:d.name, _key:d.key, _color:d.color, _href:d.href})
+    );
+  });
+}
+
+function showPortalLoading(show){
+  let el = document.getElementById('portalLoading');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'portalLoading';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(14,21,33,.6);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(3px)';
+    el.innerHTML = '<div style="background:#fff;border-radius:16px;padding:28px 40px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.3)"><div style="font-size:2rem;margin-bottom:12px">☁️</div><div style="font-weight:900;font-size:1rem;color:#0e1521;letter-spacing:-.5px">ポータルを読み込み中</div><div style="font-size:.78rem;color:#5a7080;margin-top:5px">全部署のデータをGoogleスプレッドシートから取得しています</div></div>';
+    document.body.appendChild(el);
+  }
+  el.style.display = show ? 'flex' : 'none';
+}
+
+async function loadAllFromGAS(){
+  showPortalLoading(true);
+  try {
+    const res  = await fetch(GAS_URL + '?dept=all');
+    const json = await res.json();
+    if(json.ok && json.data){
+      DEPTS.forEach(d => {
+        if(d.key === 'kochocho') return;
+        const rows = json.data[d.key];
+        if(Array.isArray(rows) && rows.length > 0){
+          d.orders = rows.map(o => ({...o, id: String(o.id), confirm: o.confirm || null}));
+          const latest = d.orders.reduce((mx,o) => o.od > mx ? o.od : mx, '');
+          if(latest) d.lastUpdate = latest.slice(5).replace('-','/');
+        }
+      });
+      // 工場長は全部署集約
+      const k = DEPTS.find(d=>d.key==='kochocho');
+      if(k) k.orders = DEPTS.filter(d=>d.key!=='kochocho').flatMap(d=>d.orders);
+    }
+  } catch(e) {
+    console.warn('GASからの取得失敗:', e);
+    tk('⚠️ データの読み込みに失敗しました。ネットワークを確認してください。');
+  }
+  rebuildAllOrders();
+  showPortalLoading(false);
+  renderHero(); renderDepts(); renderProd(); renderArri(); renderAlert(); renderSide();
+}
+
+// ─── 日付ユーティリティ ───
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const DOW = ['日','月','火','水','木','金','土'];
+const toD = s => { if(!s)return null; const d=new Date(s);d.setHours(0,0,0,0);return d; };
+const dif = d => Math.round((d - TODAY) / 86400000);
+// 日付のみ取り出す（ISO形式 "2026-03-04T15:00:00.000Z" にも対応）
+const fmt = s => { if(!s) return '—'; const d = s.slice(0,10); return d.slice(5).replace('-','/'); };
+
+// 今週（月〜日）
+const _w = TODAY.getDay();
+const WEEK_MON = new Date(TODAY); WEEK_MON.setDate(TODAY.getDate() - (_w===0?6:_w-1));
+const WEEK_SUN = new Date(WEEK_MON); WEEK_SUN.setDate(WEEK_MON.getDate()+6);
+
+// 初期化
+(function(){
+  const now = new Date();
+  document.getElementById('syncTime').textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const mf = d => `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`;
+  document.getElementById('weekRangeLabel').textContent = `${mf(WEEK_MON)} 〜 ${mf(WEEK_SUN)}`;
+  document.getElementById('arriRangeLabel').textContent = `${mf(WEEK_MON)} 〜 ${mf(WEEK_SUN)}`;
+  const t5 = document.getElementById('hs-t5');
+  if(t5) t5.textContent = `${(WEEK_MON.getMonth()+1)}/${WEEK_MON.getDate()}〜${(WEEK_SUN.getMonth()+1)}/${WEEK_SUN.getDate()}`;
+})();
+
+// ─── HERO ───
+function renderHero(){
+  const total = ALL_ORDERS.length;
+  const late  = ALL_ORDERS.filter(o=>o.st==='late').length;
+  const pend  = ALL_ORDERS.filter(o=>!o.confirm&&['ordered','pending','late'].includes(o.st)).length;
+  const done  = ALL_ORDERS.filter(o=>o.st==='done').length;
+  const weekCnt = ALL_ORDERS.filter(o=>{
+    const d=toD(o.confirm||o.hope); return d&&d>=WEEK_MON&&d<=WEEK_SUN;
+  }).length;
+  document.getElementById('hs-total').textContent = total;
+  document.getElementById('hs-late').textContent  = late;
+  document.getElementById('hs-pend').textContent  = pend;
+  document.getElementById('hs-done').textContent  = done;
+  document.getElementById('hs-week').textContent  = weekCnt;
+  const t1=document.getElementById('hs-t1'); if(t1) t1.textContent=`全${DEPTS.filter(d=>d.key!=='kochocho').length}部署`;
+  const t2=document.getElementById('hs-t2'); if(t2) t2.textContent=late?'⚠️ 確認が必要':'✅ 超過なし';
+  const t4=document.getElementById('hs-t4'); if(t4) t4.textContent=total?`完了率 ${Math.round(done/total*100)}%`:'—';
+}
+
+// ─── 部署カード ───
+function renderDepts(){
+  document.getElementById('deptGrid').innerHTML = DEPTS.map(d => {
+    const isK = d.key==='kochocho';
+    const src  = isK ? ALL_ORDERS : d.orders;
+    const total  = src.length;
+    const active = src.filter(o=>['ordered','confirmed','pending'].includes(o.st)).length;
+    const late_  = src.filter(o=>o.st==='late').length;
+    const done_  = src.filter(o=>o.st==='done').length;
+    let acls='ok', atxt='✅ 問題なし — 全件順調';
+    if(isK){ acls='mgr'; atxt='📊 全社統合ビュー — 管理者向け'; }
+    else if(late_>0){ acls=''; atxt=`⚠️ 納期超過 ${late_}件`; }
+    else {
+      const wc=d.orders.filter(o=>!o.confirm&&['ordered','pending'].includes(o.st)).length;
+      if(wc>0){ acls='warn'; atxt=`📌 確定待ち ${wc}件`; }
+    }
+    // gradient: lighten main color
+    const gc = d.gTo || d.color;
+    return `<a class="dept-card" href="${d.href}">
+      <div class="dc-accent" style="background:linear-gradient(90deg,${d.color},${gc})"></div>
+      <div class="dc-body">
+        <div class="dc-top">
+          <div class="dc-icon" style="background:${d.pale}">${d.icon}</div>
+          <div><div class="dc-name">${d.name}</div><div class="dc-desc">${d.desc}</div></div>
+        </div>
+        <div class="dc-stats">
+          <div class="dcs"><div class="dcs-n" style="color:var(--accent)">${total}</div><div class="dcs-l">${isK?'全社':'今月'}</div></div>
+          <div class="dcs"><div class="dcs-n" style="color:var(--amber)">${active}</div><div class="dcs-l">進行中</div></div>
+          <div class="dcs"><div class="dcs-n" style="color:var(--red)">${late_}</div><div class="dcs-l">超過</div></div>
+          <div class="dcs"><div class="dcs-n" style="color:var(--green)">${done_}</div><div class="dcs-l">完了</div></div>
+        </div>
+      </div>
+      <div class="dc-alert ${acls}">${atxt}</div>
+      <div class="dc-footer">
+        <span class="dc-open" style="color:${d.color}">詳細ページを開く →</span>
+        <span class="dc-updated">最終更新 ${d.lastUpdate}</span>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+// ─── 今週のアイテム取得（超過分なし：今週分のみ） ───
+function getWeekOnly(keys){
+  // keys: 対象部署キーの配列。空なら全部署
+  const items=[];
+  ALL_ORDERS.forEach(o=>{
+    if(keys.length && !keys.includes(o._key)) return;
+    const cD=toD(o.confirm), hD=toD(o.hope);
+    const aD=cD||hD; if(!aD)return;
+    const df=dif(aD);
+    // 今週のみ（超過は含めない）
+    if(aD>=WEEK_MON && aD<=WEEK_SUN) items.push({...o,_aD:aD,_df:df,_isC:!!cD});
+  });
+  items.sort((a,b)=>a._aD-b._aD);
+  return items;
+}
+
+const SN={confirmed:'納期確定',ordered:'発注中',done:'完了',pending:'未発注',late:'納期超過'};
+const SC={confirmed:'bc',ordered:'bo',done:'bd',pending:'bp',late:'bl'};
+
+// 共通：テーブルHTMLを生成（部署タグあり/なし切り替え）
+function buildWeekRows(items, showDept){
+  if(!items.length) return `<tr><td colspan="${showDept?10:9}" style="text-align:center;padding:22px;color:var(--ink-muted);font-size:.78rem">✅ 今週の納期予定はありません</td></tr>`;
+  const TS_LBL = { am:'午前', pm:'午後', '9:00':'9:00', '10:00':'10:00', '12:00':'12:00', '14:00':'14:00', '16:00':'16:00', '17:00':'17:00' };
+  let html='',curD=null;
+  items.forEach(o=>{
+    const dk=o._aD.toISOString().slice(0,10);
+    if(dk!==curD){
+      curD=dk;
+      const d=o._aD; const isTd=o._df===0;
+      const cls=isTd?'dg today-r':'dg';
+      const lbl=isTd
+        ?`🔴 本日 — ${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`
+        :`${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`;
+      html+=`<tr class="${cls}"><td colspan="${showDept?10:9}">${lbl}</td></tr>`;
+    }
+    let dc='d-ok',dt='';
+    if(o._df===0){dc='d-td';dt='本日が納期';}
+    else if(o._df<=2){dc='d-nr';dt=`あと${o._df}日`;}
+    else if(o._df<=4){dc='d-sn';dt=`あと${o._df}日`;}
+    else{dt=`あと${o._df}日`;}
+    const deptCell = showDept ? `<td><span class="dtag" style="color:${o._color};border-color:${o._color}">${o._dept}</span></td>` : '';
+    const tsVal = o.timeslot ? (TS_LBL[o.timeslot]||o.timeslot) : '—';
+    const tsStyle = o.timeslot ? 'color:var(--teal,#0891b2);font-weight:700' : 'color:var(--ink-muted)';
+    html+=`<tr class="dr" onclick="location.href='${o._href}'">
+      <td class="mono">${o._aD.getMonth()+1}/${o._aD.getDate()}</td>
+      ${deptCell}
+      <td><strong>${o.name}</strong></td>
+      <td style="color:var(--ink-muted)">${o.sup}</td>
+      <td class="mono" style="color:var(--amber)">${fmt(o.hope)}</td>
+      <td class="mono" style="${o.confirm?'color:var(--purple);font-weight:700':'color:var(--ink-muted)'}">${fmt(o.confirm)}</td>
+      <td class="mono" style="${tsStyle}">${tsVal}</td>
+      <td><span class="dlt ${o._isC?'dl-c':'dl-h'}">${o._isC?'確定':'希望'}</span></td>
+      <td><span class="db ${dc}">${dt}</span></td>
+      <td><span class="badge ${SC[o.st]}">${SN[o.st]}</span></td>
+    </tr>`;
+  });
+  return html;
+}
+
+// ─── 生産スケジュール（加工課・生場・餡場） ───
+const PROD_KEYS = ['kakouka','namaba','anba'];
+let prodAll = false;
+function renderProd(){
+  const items = getWeekOnly(PROD_KEYS);
+  const tc=items.filter(i=>i._df===0).length, wc=items.filter(i=>i._df>0).length;
+  const bt=document.getElementById('prod-today'),bw=document.getElementById('prod-week');
+  bt.textContent=`本日 ${tc}件`; bt.style.display=tc?'':'none';
+  bw.textContent=`今週 ${wc}件`; bw.style.display=wc?'':'none';
+  const toShow=prodAll?items:items.slice(0,999);
+  document.getElementById('prodBody').innerHTML=buildWeekRows(toShow, true);
+  document.getElementById('prodMoreBtn').style.display='none';
+}
+function showMoreProd(){prodAll=true;renderProd();}
+
+// ─── 入荷スケジュール（配送課） ───
+const ARRI_KEYS = ['haisouka'];
+let arriAll = false;
+function renderArri(){
+  const items = getWeekOnly(ARRI_KEYS);
+  const tc=items.filter(i=>i._df===0).length, wc=items.filter(i=>i._df>0).length;
+  const bt=document.getElementById('arri-today'),bw=document.getElementById('arri-week');
+  bt.textContent=`本日 ${tc}件`; bt.style.display=tc?'':'none';
+  bw.textContent=`今週 ${wc}件`; bw.style.display=wc?'':'none';
+  const toShow=arriAll?items:items.slice(0,999);
+  document.getElementById('arriBody').innerHTML=buildWeekRows(toShow, false);
+  document.getElementById('arriMoreBtn').style.display='none';
+}
+function showMoreArri(){arriAll=true;renderArri();}
+
+// ─── 要対応テーブル ───
+const ALERT_INIT = PORTAL_CFG.alertN > 0 ? PORTAL_CFG.alertN : 999;
+let alertAll = false;
+function renderAlert(){
+  const items=ALL_ORDERS.filter(o=>{
+    if(o.st==='done')return false;
+    const h=toD(o.hope);
+    return (h&&dif(h)<0&&!o.confirm)||o.st==='late';
+  }).sort((a,b)=>(toD(a.hope)||0)-(toD(b.hope)||0));
+  document.getElementById('alertBadge').textContent=`${items.length}件`;
+  const toShow=alertAll?items:items.slice(0,ALERT_INIT);
+  document.getElementById('alertBody').innerHTML=toShow.length?toShow.map(o=>{
+    const h=toD(o.hope); const ov=h?Math.abs(Math.min(dif(h),0)):0;
+    return `<tr class="dr" onclick="location.href='${o._href}'">
+      <td><span class="dtag" style="color:${o._color};border-color:${o._color}">${o._dept}</span></td>
+      <td><strong>${o.name}</strong></td>
+      <td style="color:var(--ink-muted)">${o.sup}</td>
+      <td class="mono" style="color:var(--amber)">${fmt(o.hope)}</td>
+      <td class="mono" style="color:var(--ink-muted)">${fmt(o.confirm)}</td>
+      <td><span class="db d-ov">${ov}日超過</span></td>
+      <td><span class="badge ${SC[o.st]}">${SN[o.st]}</span></td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--ink-muted);font-size:.78rem">✅ 要対応の発注はありません</td></tr>`;
+  const mb=document.getElementById('alertMoreBtn'); const hid=items.length-ALERT_INIT;
+  if(!alertAll&&hid>0&&PORTAL_CFG.alertN>0){mb.style.display='';document.getElementById('alertMoreCnt').textContent=hid;}
+  else mb.style.display='none';
+}
+function showMoreAlert(){alertAll=true;renderAlert();}
+
+// ─── サイドカード ───
+const DC={confirmed:'var(--purple)',ordered:'var(--accent)',done:'var(--green)',pending:'var(--amber)',late:'var(--red)'};
+function renderSide(){
+  const recent=[...ALL_ORDERS].sort((a,b)=>b.od.localeCompare(a.od)).slice(0,7);
+  document.getElementById('recentBody').innerHTML=recent.length?recent.map(o=>`
+    <div class="ni">
+      <div class="ni-dot" style="background:${DC[o.st]}"></div>
+      <div class="ni-text"><strong style="color:${o._color}">${o._dept}</strong>：${o.name}</div>
+      <span class="ni-tag">${fmt(o.od)} ${SN[o.st]}</span>
+    </div>`).join(''):`<div class="ni-empty">データなし</div>`;
+
+  const future=ALL_ORDERS.filter(o=>{
+    const d=toD(o.confirm||o.hope); return d&&dif(d)>7;
+  }).sort((a,b)=>{const da=toD(a.confirm||a.hope),db=toD(b.confirm||b.hope);return da-db;}).slice(0,9);
+  document.getElementById('futureBody').innerHTML=future.length?future.map(o=>{
+    const d=toD(o.confirm||o.hope);
+    return `<div class="ni">
+      <div class="ni-dot" style="background:${o.confirm?'var(--purple)':'var(--amber)'}"></div>
+      <div class="ni-text"><strong style="color:${o._color}">${o._dept}</strong>：${o.name}</div>
+      <span class="ni-tag">${fmt(o.confirm||o.hope)} あと${dif(d)}日</span>
+    </div>`;
+  }).join(''):`<div class="ni-empty">来週以降の納期はありません ✅</div>`;
+}
+
+// ─── 初回描画（空データで枠だけ表示してからGASロード） ───
+rebuildAllOrders();
+renderHero(); renderDepts(); renderProd(); renderArri(); renderAlert(); renderSide();
+loadAllFromGAS();
+
+let _tt;
+function tk(msg){const el=document.getElementById('toastEl');el.innerHTML=msg;el.style.display='flex';clearTimeout(_tt);_tt=setTimeout(()=>el.style.display='none',2800);}
+</script>
+</body>
+</html>
