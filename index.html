@@ -313,7 +313,8 @@ const CFG_KEY = 'hanbai_cfg_v2';
 const PORTAL_KEY = 'hanbai_portal_v1';
 
 // ポータル設定（表示件数など）
-let PORTAL_CFG = { sysname:'発注管理システム', syssub:'Order Management Portal', weekN:0, alertN:8 };
+let PORTAL_CFG = { sysname:'発注管理システム', syssub:'Order Management Portal', weekN:0, alertN:8,
+  prodKeys:['kakouka','namaba','anba'], arriKeys:['haisouka'] };
 try {
   const ps = localStorage.getItem(PORTAL_KEY);
   if (ps) { PORTAL_CFG = {...PORTAL_CFG, ...JSON.parse(ps)}; }
@@ -562,8 +563,8 @@ function buildWeekRows(items, showDept){
   return html;
 }
 
-// ─── 生産スケジュール（加工課・生場・餡場） ───
-const PROD_KEYS = ['kakouka','namaba','anba'];
+// ─── 生産スケジュール（設定管理で変更可能） ───
+const PROD_KEYS = PORTAL_CFG.prodKeys || ['kakouka','namaba','anba'];
 let prodAll = false;
 function renderProd(){
   const items = getWeekOnly(PROD_KEYS);
@@ -577,8 +578,8 @@ function renderProd(){
 }
 function showMoreProd(){prodAll=true;renderProd();}
 
-// ─── 入荷スケジュール（配送課） ───
-const ARRI_KEYS = ['haisouka'];
+// ─── 入荷スケジュール（設定管理で変更可能） ───
+const ARRI_KEYS = PORTAL_CFG.arriKeys || ['haisouka'];
 let arriAll = false;
 function renderArri(){
   const items = getWeekOnly(ARRI_KEYS);
