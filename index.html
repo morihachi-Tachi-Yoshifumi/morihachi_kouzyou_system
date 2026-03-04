@@ -180,7 +180,7 @@ header{background:var(--ink);padding:0 36px;display:flex;align-items:center;gap:
   </div>
   <div class="tbl-card">
     <div class="tbl-hd">
-      <span class="tbl-title">加工課・生場・餡場 — 今週の納期（確定・希望）</span>
+      <span class="tbl-title" id="prodTitle">加工課・生場・餡場 — 今週の納期（確定・希望）</span>
       <span class="ob ob-a" id="prod-today" style="display:none"></span>
       <span class="ob ob-b" id="prod-week" style="display:none"></span>
     </div>
@@ -206,7 +206,7 @@ header{background:var(--ink);padding:0 36px;display:flex;align-items:center;gap:
   </div>
   <div class="tbl-card">
     <div class="tbl-hd">
-      <span class="tbl-title">配送課 — 今週の納期（確定・希望）</span>
+      <span class="tbl-title" id="arriTitle">配送課 — 今週の納期（確定・希望）</span>
       <span class="ob ob-a" id="arri-today" style="display:none"></span>
       <span class="ob ob-b" id="arri-week" style="display:none"></span>
     </div>
@@ -566,6 +566,27 @@ function buildWeekRows(items, showDept){
 // ─── 生産スケジュール（設定管理で変更可能） ───
 const PROD_KEYS = PORTAL_CFG.prodKeys || ['kakouka','namaba','anba'];
 let prodAll = false;
+
+// ─── 入荷スケジュール（設定管理で変更可能） ───
+const ARRI_KEYS = PORTAL_CFG.arriKeys || ['haisouka'];
+let arriAll = false;
+
+// スケジュール表の見出しを動的に更新
+(function(){
+  const deptNameMap = {};
+  DEFAULT_DEPTS.forEach(d => deptNameMap[d.key] = d.name);
+  try {
+    const raw = localStorage.getItem(CFG_KEY);
+    if(raw){ const p=JSON.parse(raw); Object.keys(p).forEach(k=>{ if(p[k]?.name) deptNameMap[k]=p[k].name; }); }
+  } catch{}
+  const prodNames = PROD_KEYS.map(k => deptNameMap[k] || k).join('・');
+  const arriNames = ARRI_KEYS.map(k => deptNameMap[k] || k).join('・');
+  const el1 = document.getElementById('prodTitle');
+  const el2 = document.getElementById('arriTitle');
+  if(el1) el1.textContent = prodNames + ' — 今週の納期（確定・希望）';
+  if(el2) el2.textContent = arriNames + ' — 今週の納期（確定・希望）';
+})();
+
 function renderProd(){
   const items = getWeekOnly(PROD_KEYS);
   const tc=items.filter(i=>i._df===0).length, wc=items.filter(i=>i._df>0).length;
@@ -578,9 +599,6 @@ function renderProd(){
 }
 function showMoreProd(){prodAll=true;renderProd();}
 
-// ─── 入荷スケジュール（設定管理で変更可能） ───
-const ARRI_KEYS = PORTAL_CFG.arriKeys || ['haisouka'];
-let arriAll = false;
 function renderArri(){
   const items = getWeekOnly(ARRI_KEYS);
   const tc=items.filter(i=>i._df===0).length, wc=items.filter(i=>i._df>0).length;
