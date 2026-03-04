@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -342,6 +343,23 @@ const DEPTS = DEFAULT_DEPTS.map(d => {
 // システム名反映
 document.getElementById('sysName').textContent = PORTAL_CFG.sysname;
 document.getElementById('sysSub').textContent  = PORTAL_CFG.syssub;
+
+// ポータルフォント設定を反映
+(function(){
+  const FONT_FAMILIES = {
+    noto:     "'Noto Sans JP', sans-serif",
+    meiryo:   "Meiryo, 'MS PGothic', sans-serif",
+    yugo:     "'Yu Gothic', 'YuGothic', sans-serif",
+    hiragino: "'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif",
+    gothic:   "'MS Gothic', 'Osaka', monospace",
+  };
+  const root = document.documentElement;
+  if(PORTAL_CFG.fontSize)   root.style.fontSize   = PORTAL_CFG.fontSize + 'px';
+  if(PORTAL_CFG.lineHeight) root.style.lineHeight  = (PORTAL_CFG.lineHeight/10).toFixed(1);
+  if(PORTAL_CFG.fontFamily && FONT_FAMILIES[PORTAL_CFG.fontFamily])
+    document.body.style.fontFamily = FONT_FAMILIES[PORTAL_CFG.fontFamily];
+  if(PORTAL_CFG.fontWeight) document.body.style.fontWeight = PORTAL_CFG.fontWeight;
+})();
 
 // ════════════════════════════════════════════════════════════
 // ☁️  Phase 2: GAS から全部署の発注データを一括取得
