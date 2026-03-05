@@ -226,6 +226,7 @@ td.ec-wrap{position:relative;min-width:60px}
 .ts-display{font-size:.72rem;font-weight:700;padding:2px 7px;border-radius:5px;cursor:pointer;border:1.5px dashed transparent;transition:all .15s;white-space:nowrap;color:var(--ink-muted)}
 .ts-display.set{color:var(--teal,#0891b2);background:var(--teal-pale,#cffafe);border-color:transparent}
 .ts-display:hover{border-color:var(--dept-color);background:var(--dept-pale,#f0f4ff)}
+.ts-cell.ec-wrap:hover .ts-display{border-style:solid}
 .ts-dropdown{position:absolute;z-index:200;background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.13);padding:6px;min-width:160px;display:none}
 .ts-dropdown.open{display:block}
 .ts-group-lbl{font-size:.58rem;font-weight:800;color:var(--ink-muted);letter-spacing:.8px;padding:4px 6px 2px;text-transform:uppercase}
@@ -1027,9 +1028,9 @@ function updateStats(){
           ${o.confirm?`<div><span class="dl-label lbl-c">確定</span> <span class="mono" style="color:var(--purple);font-weight:700">${(o.confirm||'').slice(5,10).replace('-','/')}</span></div>`:''}
         </div>
       </td>
-      <td class="ts-cell" onclick="event.stopPropagation()">
+      <td class="ts-cell ec-wrap ec" onclick="event.stopPropagation()" ondblclick="event.stopPropagation();tsToggle('${String(o.id)}')" title="ダブルクリックで時間帯を変更">
         <div class="ts-wrap">
-          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}" onclick="tsToggle('${String(o.id)}')">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
+          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
           <div class="ts-dropdown" id="ts-dd-${o.id}">
             ${tsDropdownHTML(String(o.id), o.timeslot||'')}
           </div>
@@ -1080,9 +1081,9 @@ function renderHistBody(){
           <button class="il-cancel-btn" onclick="ilCancel(this.closest('.il-confirm-wrap'))">✕</button>
         </div>
       </td>
-      <td class="ts-cell" onclick="event.stopPropagation()">
+      <td class="ts-cell ec-wrap ec" onclick="event.stopPropagation()" ondblclick="event.stopPropagation();tsToggle('${String(o.id)}')" title="ダブルクリックで時間帯を変更">
         <div class="ts-wrap">
-          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}" onclick="tsToggle('${String(o.id)}')">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
+          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
           <div class="ts-dropdown" id="ts-dd-${o.id}">
             ${tsDropdownHTML(String(o.id), o.timeslot||'')}
           </div>
@@ -1272,9 +1273,9 @@ function renderList(){
           <button class="il-cancel-btn" onclick="ilCancel(this.closest('.il-confirm-wrap'))">✕</button>
         </div>
       </td>
-      <td class="ts-cell" onclick="event.stopPropagation()">
+      <td class="ts-cell ec-wrap ec" onclick="event.stopPropagation()" ondblclick="event.stopPropagation();tsToggle('${String(o.id)}')" title="ダブルクリックで時間帯を変更">
         <div class="ts-wrap">
-          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}" onclick="tsToggle('${String(o.id)}')">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
+          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
           <div class="ts-dropdown" id="ts-dd-${o.id}">
             ${tsDropdownHTML(String(o.id), o.timeslot||'')}
           </div>
