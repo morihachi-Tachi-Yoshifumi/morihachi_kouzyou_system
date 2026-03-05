@@ -20,7 +20,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Noto Sans JP',sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6}
-.app{display:flex;height:100vh;overflow:hidden;flex-direction:column;position:relative}
+.app{display:flex;height:100vh;overflow:hidden;flex-direction:column}
 
 /* ── TOPBAR ── */
 .topbar{background:var(--ink);display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:3px solid var(--dept-color);flex-shrink:0;height:56px}
@@ -425,6 +425,16 @@ td.ec-wrap{position:relative;min-width:60px}
   z-index:9000;
   padding-bottom:env(safe-area-inset-bottom);
 }
+@media (hover:none) and (pointer:coarse) {
+  .bottom-nav{ display:block; }
+  .tab-bar{ display:none; }
+  .tab-panel{ padding-bottom:calc(60px + env(safe-area-inset-bottom)); }
+  .back-btn{ display:none; }
+  .top-divider{ display:none; }
+  .sync-info{ display:none; }
+  .hdr-btn{ display:none; }
+  .toast{ bottom:70px; right:12px; left:12px; width:auto; }
+}
 .bottom-nav-inner{
   display:flex;height:60px;
 }
@@ -434,6 +444,10 @@ td.ec-wrap{position:relative;min-width:60px}
   color:rgba(255,255,255,.4);font-family:inherit;
   transition:all .15s;padding:0;
   -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  -webkit-appearance:none;
+  user-select:none;
+  -webkit-user-select:none;
 }
 .bn-btn.active{color:var(--dept-color)}
 .bn-btn.active .bn-icon{transform:scale(1.15)}
@@ -1984,24 +1998,24 @@ loadFromGAS();
 <!-- ボトムナビ（スマホのみ） -->
 <div class="bottom-nav" id="bottomNav">
   <div class="bottom-nav-inner">
-    <button class="bn-btn active" id="bn-home" onclick="sw('home',null);bnSwitch('home')" style="position:relative">
+    <button class="bn-btn active" id="bn-home" onclick="sw('home',null);bnSwitch('home')" ontouchend="this.onclick()" style="position:relative">
       <span class="bn-icon">🏠</span>
       <span class="bn-label">ホーム</span>
     </button>
-    <button class="bn-btn" id="bn-new" onclick="sw('new',null);bnSwitch('new')" style="position:relative">
+    <button class="bn-btn" id="bn-new" onclick="sw('new',null);bnSwitch('new')" ontouchend="this.onclick()" style="position:relative">
       <span class="bn-icon">➕</span>
       <span class="bn-label">発注</span>
     </button>
-    <button class="bn-btn" id="bn-list" onclick="sw('list',null);bnSwitch('list')" style="position:relative">
+    <button class="bn-btn" id="bn-list" onclick="sw('list',null);bnSwitch('list')" ontouchend="this.onclick()" style="position:relative">
       <span class="bn-icon">📋</span>
       <span class="bn-label">一覧</span>
       <span class="bn-badge" id="bn-late-badge" style="display:none">!</span>
     </button>
-    <button class="bn-btn" id="bn-history" onclick="sw('history',null);bnSwitch('history')">
+    <button class="bn-btn" id="bn-history" onclick="sw('history',null);bnSwitch('history')" ontouchend="this.onclick()">
       <span class="bn-icon">🕐</span>
       <span class="bn-label">履歴</span>
     </button>
-    <button class="bn-btn" id="bn-settings" onclick="sw('settings',null);bnSwitch('settings')">
+    <button class="bn-btn" id="bn-settings" onclick="sw('settings',null);bnSwitch('settings')" ontouchend="this.onclick()">
       <span class="bn-icon">⚙️</span>
       <span class="bn-label">設定</span>
     </button>
