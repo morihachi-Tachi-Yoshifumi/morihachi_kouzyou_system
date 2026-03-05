@@ -284,10 +284,7 @@ td.ec-wrap{position:relative;min-width:60px}
 .hs-item{text-align:center}
 .hs-num{font-size:1.2rem;font-weight:900;letter-spacing:-1px;font-family:'DM Mono',monospace}
 .hs-lbl{font-size:.66rem;color:var(--ink-muted);font-weight:500}
-.chart-bar-wrap{display:flex;align-items:flex-end;gap:3px;height:46px;padding:0 15px 11px}
-.cbar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.cbar{border-radius:4px 4px 0 0;width:100%;min-height:3px}
-.cbar-lbl{font-size:.52rem;color:var(--ink-muted);font-weight:700}
+
 
 /* ── DAY PANEL ── */
 .overlay{position:fixed;inset:0;background:rgba(14,21,33,.32);z-index:100;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(2px)}
@@ -490,17 +487,7 @@ td.ec-wrap{position:relative;min-width:60px}
             </div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">月別発注件数</span></div>
-          <div class="chart-bar-wrap">
-            <div class="cbar-col"><div class="cbar" style="height:26px;background:var(--green)"></div><div class="cbar-lbl">7月</div></div>
-            <div class="cbar-col"><div class="cbar" style="height:34px;background:var(--green)"></div><div class="cbar-lbl">8月</div></div>
-            <div class="cbar-col"><div class="cbar" style="height:20px;background:var(--green)"></div><div class="cbar-lbl">9月</div></div>
-            <div class="cbar-col"><div class="cbar" style="height:38px;background:var(--amber)"></div><div class="cbar-lbl">10月</div></div>
-            <div class="cbar-col"><div class="cbar" style="height:28px;background:var(--amber)"></div><div class="cbar-lbl">11月</div></div>
-            <div class="cbar-col"><div class="cbar" style="height:44px;background:var(--dept-color)" id="chartBar"></div><div class="cbar-lbl">12月</div></div>
-          </div>
-        </div>
+
       </div>
     </div>
   </div>
@@ -625,11 +612,7 @@ td.ec-wrap{position:relative;min-width:60px}
 <div class="tab-panel" id="panel-history">
   <div class="history-header">
     <span style="font-size:.74rem;font-weight:800;color:var(--ink-soft);white-space:nowrap">期間：</span>
-    <div class="month-chips">
-      <div class="chip">2025年9月</div><div class="chip">2025年10月</div>
-      <div class="chip">2025年11月</div><div class="chip active">2025年12月</div>
-      <div class="chip">+ 年月を指定</div>
-    </div>
+    <div class="month-chips" id="monthChips"><!-- JS生成 --></div>
   </div>
   <div class="history-summary">
     <div class="hs-item"><div class="hs-num" style="color:var(--accent)" id="hs-total">0</div><div class="hs-lbl">発注件数</div></div>
@@ -1050,6 +1033,49 @@ function updateStats(){
   renderHistBody();
 }
 
+let histY=new Date().getFullYear(), histM=new Date().getMonth()+1;
+
+// ── 月チップを動的生成（常に最新の6ヶ月） ──
+function initHistChips(){
+  const wrap = document.getElementById('monthChips'); if(!wrap) return;
+  const now = new Date();
+  let chips = '';
+  for(let i=5; i>=0; i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const y = d.getFullYear(), m = d.getMonth()+1;
+    const isActive = (i===0) ? 'active' : '';
+    chips += `<div class="chip ${isActive}" onclick="selChip(this,'${y}-${String(m).padStart(2,'0')}')">${y}年${m}月</div>`;
+  }
+  chips += '<div class="chip" onclick="askCustomMonth()">+ 年月を指定</div>';
+  wrap.innerHTML = chips;
+  // 初期選択月を設定
+  const d0 = new Date(now.getFullYear(), now.getMonth(), 1);
+  histY = d0.getFullYear(); histM = d0.getMonth()+1;
+}
+function selChip(el, ym){
+  document.querySelectorAll('.month-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const [y,m] = ym.split('-').map(Number);
+  histY=y; histM=m;
+  renderHistChart(); renderHistBody();
+}
+function askCustomMonth(){
+  const v = prompt('年月を入力してください（例: 2026-01）');
+  if(!v) return;
+  const [y,m] = v.split('-').map(Number);
+  if(!y||!m||m<1||m>12){ alert('形式が正しくありません'); return; }
+  histY=y; histM=m;
+  // チップに追加
+  const wrap = document.getElementById('monthChips');
+  document.querySelectorAll('.month-chips .chip').forEach(c=>c.classList.remove('active'));
+  const el = document.createElement('div');
+  el.className='chip active';
+  el.textContent=`${y}年${m}月`;
+  el.onclick = ()=>selChip(el,`${y}-${String(m).padStart(2,'0')}`);
+  wrap.insertBefore(el, wrap.lastElementChild);
+  renderHistChart(); renderHistBody();
+}
+
 function renderHistChart(){
   const catCounts={};
   ORDERS.forEach(o=>{ catCounts[o.cat]=(catCounts[o.cat]||0)+1; });
@@ -1098,7 +1124,7 @@ function renderHistBody(){
 }
 
 // ════ CALENDAR ════
-let calY=2025, calM=11;
+let calY=new Date().getFullYear(), calM=new Date().getMonth();
 const MJP=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const DJP=['日','月','火','水','木','金','土'];
 
