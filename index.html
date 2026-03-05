@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -545,8 +544,9 @@ function buildWeekRows(items, showDept){
     else if(o._df<=4){dc='d-sn';dt=`あと${o._df}日`;}
     else{dt=`あと${o._df}日`;}
     const deptCell = showDept ? `<td><span class="dtag" style="color:${o._color};border-color:${o._color}">${o._dept}</span></td>` : '';
-    const tsVal = o.timeslot ? (TS_LBL[o.timeslot]||o.timeslot) : '—';
-    const tsStyle = o.timeslot ? 'color:var(--teal,#0891b2);font-weight:700' : 'color:var(--ink-muted)';
+    const _ts = (o.timeslot && !String(o.timeslot).includes('1899') && String(o.timeslot).length<=10) ? o.timeslot : '';
+    const tsVal = _ts ? (TS_LBL[_ts]||_ts) : '—';
+    const tsStyle = _ts ? 'color:var(--teal,#0891b2);font-weight:700' : 'color:var(--ink-muted)';
     html+=`<tr class="dr" onclick="location.href='${o._href}'">
       <td class="mono">${o._aD.getMonth()+1}/${o._aD.getDate()}</td>
       ${deptCell}

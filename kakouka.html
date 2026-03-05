@@ -214,7 +214,7 @@ td.ec-wrap{position:relative;min-width:60px}
 .edit-section-lbl{font-size:.65rem;font-weight:800;color:var(--ink-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
 .modal-btn-save{flex:2;padding:10px;border:none;border-radius:9px;background:var(--dept-color);color:#fff;font-size:.83rem;font-weight:800;cursor:pointer;font-family:inherit;transition:opacity .15s}
 .modal-btn-save:hover{opacity:.88}
-.edit-row-btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 9px;border:1.5px solid var(--border);border-radius:6px;background:transparent;color:var(--ink-muted);font-size:.68rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+
 .edit-row-btn:hover{border-color:var(--dept-color);color:var(--dept-color);background:var(--accent-pale)}
 .edit-ts-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
 .edit-ts-btn{padding:4px 11px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink-soft);transition:all .15s}
@@ -1023,13 +1023,13 @@ function updateStats(){
       <td class="mono">${o.qty}</td>
       <td>
         <div class="dl-cell">
-          <div><span class="dl-label lbl-h">希望</span> <span class="mono">${(o.hope||'').slice(0,10).slice(5).replace('-','/')}</span></div>
-          ${o.confirm?`<div><span class="dl-label lbl-c">確定</span> <span class="mono" style="color:var(--purple);font-weight:700">${(o.confirm||'').slice(0,10).slice(5).replace('-','/')}</span></div>`:''}
+          <div><span class="dl-label lbl-h">希望</span> <span class="mono">${(o.hope||'').slice(5,10).replace('-','/')}</span></div>
+          ${o.confirm?`<div><span class="dl-label lbl-c">確定</span> <span class="mono" style="color:var(--purple);font-weight:700">${(o.confirm||'').slice(5,10).replace('-','/')}</span></div>`:''}
         </div>
       </td>
       <td class="ts-cell" onclick="event.stopPropagation()">
         <div class="ts-wrap">
-          <span class="ts-display ${o.timeslot?'set':''}" onclick="tsToggle('${String(o.id)}')">${o.timeslot?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
+          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}" onclick="tsToggle('${String(o.id)}')">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
           <div class="ts-dropdown" id="ts-dd-${o.id}">
             ${tsDropdownHTML(String(o.id), o.timeslot||'')}
           </div>
@@ -1070,11 +1070,11 @@ function renderHistBody(){
       <td><strong>${o.name}</strong></td>
       <td style="color:var(--ink-muted);font-size:.74rem">${o.cat}</td>
       <td class="mono">${o.qty}</td><td>${o.sup}</td>
-      <td class="mono">${(o.od||'').slice(0,10).slice(5).replace('-','/')}</td>
-      <td class="mono" style="color:var(--amber)">${(o.hope||'').slice(0,10).slice(5).replace('-','/')}</td>
+      <td class="mono">${(o.od||'').slice(5,10).replace('-','/')}</td>
+      <td class="mono" style="color:var(--amber)">${(o.hope||'').slice(5,10).replace('-','/')}</td>
       <td onclick="event.stopPropagation()">
         <div class="il-confirm-wrap">
-          <span class="il-confirm-date ${o.confirm?'':'empty'}" onclick="ilStartEdit('${String(o.id)}',this)">${o.confirm?o.confirm.slice(0,10).slice(5).replace('-','/'):'— 入力'}</span>
+          <span class="il-confirm-date ${o.confirm?'':'empty'}" onclick="ilStartEdit('${String(o.id)}',this)">${o.confirm?o.confirm.slice(5,10).replace('-','/'):'— 入力'}</span>
           <input class="il-confirm-input" type="date" value="${o.confirm||''}" id="ilc-${o.id}">
           <button class="il-save-btn" onclick="ilSave('${String(o.id)}',this.closest('.il-confirm-wrap'))">✅</button>
           <button class="il-cancel-btn" onclick="ilCancel(this.closest('.il-confirm-wrap'))">✕</button>
@@ -1082,7 +1082,7 @@ function renderHistBody(){
       </td>
       <td class="ts-cell" onclick="event.stopPropagation()">
         <div class="ts-wrap">
-          <span class="ts-display ${o.timeslot?'set':''}" onclick="tsToggle('${String(o.id)}')">${o.timeslot?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
+          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}" onclick="tsToggle('${String(o.id)}')">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
           <div class="ts-dropdown" id="ts-dd-${o.id}">
             ${tsDropdownHTML(String(o.id), o.timeslot||'')}
           </div>
@@ -1185,11 +1185,11 @@ function renderDpBody(){
       <div class="oc-top"><div class="oc-name">${o.name}${o._dept?` <span style="font-size:.62rem;color:var(--ink-muted)">[${o._dept}]</span>`:''}</div><span class="badge ${SBa[o.st]}">${SN[o.st]}</span></div>
       <div class="oc-rows">
         <div class="oc-row"><span>📦 ${o.qty}</span><span>🏢 ${o.sup}</span><span>${PR[o.pr]}</span></div>
-        <div class="oc-row"><span>🏷 ${o.cat}</span><span>📅 発注 ${(o.od||'').slice(0,10).slice(5).replace('-','/')}</span></div>
+        <div class="oc-row"><span>🏷 ${o.cat}</span><span>📅 発注 ${(o.od||'').slice(5,10).replace('-','/')}</span></div>
       </div>
       <div class="oc-dl-block">
-        <div class="oc-dl-row"><span class="oc-dl-lbl h">希望</span><span class="oc-dl-val">${(o.hope||'').slice(0,10).slice(5).replace('-','/')}</span></div>
-        <div class="oc-dl-row"><span class="oc-dl-lbl c">確定</span><span class="oc-dl-val" style="${o.confirm?'color:var(--purple);font-weight:700':'color:var(--ink-muted)'}">${o.confirm?o.confirm.slice(0,10).slice(5).replace('-','/'):'—'}</span>
+        <div class="oc-dl-row"><span class="oc-dl-lbl h">希望</span><span class="oc-dl-val">${(o.hope||'').slice(5,10).replace('-','/')}</span></div>
+        <div class="oc-dl-row"><span class="oc-dl-lbl c">確定</span><span class="oc-dl-val" style="${o.confirm?'color:var(--purple);font-weight:700':'color:var(--ink-muted)'}">${o.confirm?o.confirm.slice(5,10).replace('-','/'):'—'}</span>
           ${_dpTab!==0&&dlTxt?`<span class="oc-dl-diff ${dlCls}">${dlTxt}</span>`:''}
           <button class="oc-edit-btn" onclick="toggleEdit(${o.id})">✏️ ${o.confirm?'修正':'確定日を入力'}</button>
         </div>
@@ -1259,14 +1259,14 @@ function renderList(){
         <span class="ec-view">${o.sup}</span>
         <input class="ec-edit" type="text" onclick="event.stopPropagation()">
       </td>
-      <td class="mono">${(o.od||'').slice(0,10).slice(5).replace('-','/')}</td>
+      <td class="mono">${(o.od||'').slice(5,10).replace('-','/')}</td>
       <td class="ec-wrap ec mono" style="color:var(--amber)" title="ダブルクリックで編集" ondblclick="event.stopPropagation();ecStartDate(this,'${String(o.id)}','hope','${(o.hope||'').slice(0,10)}')">
-        <span class="ec-view">${(o.hope||'').slice(0,10).slice(5).replace('-','/')}</span>
+        <span class="ec-view">${(o.hope||'').slice(5,10).replace('-','/')}</span>
         <input class="ec-edit" type="date" onclick="event.stopPropagation()">
       </td>
       <td onclick="event.stopPropagation()">
         <div class="il-confirm-wrap">
-          <span class="il-confirm-date ${o.confirm?'':'empty'}" onclick="ilStartEdit('${String(o.id)}',this)">${o.confirm?o.confirm.slice(0,10).slice(5).replace('-','/'):'— 入力'}</span>
+          <span class="il-confirm-date ${o.confirm?'':'empty'}" onclick="ilStartEdit('${String(o.id)}',this)">${o.confirm?o.confirm.slice(5,10).replace('-','/'):'— 入力'}</span>
           <input class="il-confirm-input" type="date" value="${o.confirm||''}" id="ilc-${o.id}">
           <button class="il-save-btn" onclick="ilSave('${String(o.id)}',this.closest('.il-confirm-wrap'))">✅</button>
           <button class="il-cancel-btn" onclick="ilCancel(this.closest('.il-confirm-wrap'))">✕</button>
@@ -1274,7 +1274,7 @@ function renderList(){
       </td>
       <td class="ts-cell" onclick="event.stopPropagation()">
         <div class="ts-wrap">
-          <span class="ts-display ${o.timeslot?'set':''}" onclick="tsToggle('${String(o.id)}')">${o.timeslot?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
+          <span class="ts-display ${(o.timeslot&&!o.timeslot.includes('1899'))?'set':''}" onclick="tsToggle('${String(o.id)}')">${(o.timeslot&&!o.timeslot.includes('1899'))?TS_LABEL[o.timeslot]||o.timeslot:'— 時間帯'}</span>
           <div class="ts-dropdown" id="ts-dd-${o.id}">
             ${tsDropdownHTML(String(o.id), o.timeslot||'')}
           </div>
@@ -1293,7 +1293,7 @@ function renderList(){
   document.getElementById('checkAll').checked=false;
   updateActionBar();
 }
-function rowClick(e,id){toggleRowCheck(id,!selIds.has(id));renderList();}
+
 function toggleRowCheck(id,checked){
   if(checked)selIds.add(id);else selIds.delete(id);
   updateActionBar();
@@ -1306,8 +1306,6 @@ function toggleAll(cb){
 }
 function updateActionBar(){const bar=document.getElementById('listActionBar');const cnt=document.getElementById('listSelCount');if(!bar)return;bar.style.display=selIds.size?'flex':'none';if(cnt)cnt.textContent=`${selIds.size}件選択中`;}
 function clearSel(){selIds.clear();renderList();}
-
-// ════ インライン確定納期入力 ════
 
 // ════ 時間帯オプション ════
 const TS_GROUPS = [
@@ -1569,7 +1567,7 @@ function sortList(key){
   ['name','cat','sup','od','hope','confirm','st'].forEach(k=>{const el=document.getElementById('si-'+k);if(!el)return;el.className='sort-icon'+(k===sortKey?(sortDir===1?' asc':' desc'):'');el.textContent=k===sortKey?(sortDir===1?'↑':'↓'):'↕';});
   renderList();
 }
-function deleteSelected(){if(!selIds.size)return;const items=ORDERS.filter(o=>selIds.has(o.id));document.getElementById('deleteModalItems').innerHTML=items.map(o=>`<div class="modal-item">${o.name}（${o.sup} / 希望：${(o.hope||'').slice(0,10).slice(5).replace('-','/')}）</div>`).join('');document.getElementById('deleteModal').classList.add('open');}
+function deleteSelected(){if(!selIds.size)return;const items=ORDERS.filter(o=>selIds.has(o.id));document.getElementById('deleteModalItems').innerHTML=items.map(o=>`<div class="modal-item">${o.name}（${o.sup} / 希望：${(o.hope||'').slice(5,10).replace('-','/')}）</div>`).join('');document.getElementById('deleteModal').classList.add('open');}
 function closeDeleteModal(){document.getElementById('deleteModal').classList.remove('open');}
 function confirmDelete(){
   const cnt=selIds.size;
