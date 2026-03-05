@@ -412,6 +412,39 @@ td.ec-wrap{position:relative;min-width:60px}
 @keyframes su{from{opacity:0;transform:translateY(10px)}}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+/* ══ かんたん入力 & テンプレート ══ */
+.form-mode-bar{display:flex;gap:0;border-bottom:1.5px solid var(--border);background:var(--paper)}
+.form-mode-btn{flex:1;padding:9px 6px;border:none;background:none;font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink-muted);border-bottom:2px solid transparent;transition:all .18s}
+.form-mode-btn.active{color:var(--dept-color);border-bottom-color:var(--dept-color);background:var(--paper-card)}
+.easy-form{padding:16px 14px;display:grid;gap:14px}
+.easy-field label{font-size:.72rem;font-weight:800;color:var(--ink-soft);display:block;margin-bottom:4px}
+.easy-field input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;background:#fff;transition:border .15s}
+.easy-field input:focus{outline:none;border-color:var(--dept-color)}
+.easy-hint{font-size:.67rem;color:var(--ink-muted);margin-top:3px}
+.easy-submit{width:100%;padding:13px;background:var(--dept-color);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:900;cursor:pointer;font-family:inherit;transition:all .18s}
+.easy-submit:hover{filter:brightness(.88)}
+/* テンプレートバー */
+.tmpl-bar{padding:10px 14px;border-bottom:1.5px solid var(--border);background:var(--paper-dim);display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:44px}
+.tmpl-bar-label{font-size:.67rem;font-weight:800;color:var(--ink-muted);white-space:nowrap}
+.tmpl-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1.5px solid var(--border);border-radius:20px;font-size:.73rem;font-weight:700;cursor:pointer;background:#fff;color:var(--ink-soft);transition:all .15s;white-space:nowrap}
+.tmpl-chip:hover{border-color:var(--dept-color);color:var(--dept-color);background:var(--accent-pale)}
+.tmpl-chip .tmpl-del{font-size:.7rem;color:var(--ink-muted);margin-left:2px;padding:0 2px;border-radius:3px}
+.tmpl-chip .tmpl-del:hover{background:var(--red-pale);color:var(--red)}
+.tmpl-add-btn{padding:4px 10px;border:1.5px dashed var(--border);border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;background:none;color:var(--ink-muted);font-family:inherit;transition:all .15s}
+.tmpl-add-btn:hover{border-color:var(--dept-color);color:var(--dept-color)}
+/* テンプレート保存モーダル */
+.tmpl-modal{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center}
+.tmpl-modal.open{display:flex}
+.tmpl-overlay{position:absolute;inset:0;background:rgba(14,21,33,.45);backdrop-filter:blur(2px)}
+.tmpl-box{position:relative;z-index:1;background:#fff;border-radius:14px;box-shadow:0 20px 56px rgba(0,0,0,.22);width:min(420px,94vw);padding:22px}
+.tmpl-box-title{font-size:.92rem;font-weight:900;margin-bottom:14px;color:var(--ink)}
+.tmpl-box-field{margin-bottom:10px}
+.tmpl-box-field label{font-size:.7rem;font-weight:800;color:var(--ink-soft);display:block;margin-bottom:3px}
+.tmpl-box-field input,.tmpl-box-field select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:.82rem;font-family:inherit}
+.tmpl-box-actions{display:flex;gap:8px;margin-top:16px}
+.tmpl-box-actions button{flex:1;padding:9px;border-radius:8px;font-size:.78rem;font-weight:800;cursor:pointer;font-family:inherit;border:1.5px solid var(--border)}
+.tmpl-save-btn{background:var(--dept-color)!important;color:#fff!important;border-color:var(--dept-color)!important}
 </style>
 </head>
 <body>
@@ -495,10 +528,47 @@ td.ec-wrap{position:relative;min-width:60px}
 
 <!-- ══ NEW ORDER ══ -->
 <div class="tab-panel" id="panel-new">
+
+  <!-- テンプレートバー -->
+  <div class="tmpl-bar">
+    <span class="tmpl-bar-label">📋 テンプレート:</span>
+    <div id="tmplChips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
+    <button class="tmpl-add-btn" onclick="openTmplSave()">＋ 現在の入力を保存</button>
+  </div>
+
+  <!-- モード切替 -->
+  <div class="form-mode-bar">
+    <button class="form-mode-btn active" id="modeEasyBtn" onclick="setFormMode('easy')">⚡ かんたん入力</button>
+    <button class="form-mode-btn" id="modeDetailBtn" onclick="setFormMode('detail')">📝 詳細入力</button>
+  </div>
+
+  <!-- かんたん入力フォーム -->
+  <div id="easyForm">
+    <div class="easy-form">
+      <div class="easy-field">
+        <label>商品名 *</label>
+        <input type="text" id="efName" placeholder="例：段ボール 60サイズ" autocomplete="off">
+      </div>
+      <div class="easy-field">
+        <label>発注先</label>
+        <input type="text" id="efSup" placeholder="例：○○梱包" list="efSupList" autocomplete="off">
+        <datalist id="efSupList"></datalist>
+      </div>
+      <div class="easy-field">
+        <label>納品希望日 *</label>
+        <input type="date" id="efHope">
+        <div class="easy-hint">📅 最低限この日付だけ入れればOK。詳細は後から編集できます。</div>
+      </div>
+      <button class="easy-submit" onclick="submitEasy()">➕ かんたん登録</button>
+    </div>
+  </div>
+
+  <!-- 詳細入力フォーム（既存） -->
+  <div id="detailForm" style="display:none">
   <div class="content"><div style="max-width:600px;margin:0 auto">
     <div class="card">
       <div class="card-header">
-        <span class="card-title">新規発注入力</span>
+        <span class="card-title">新規発注入力（詳細）</span>
         <span class="g-badge g-sheets">📊</span><span class="g-badge g-cal">📅</span>
       </div>
       <div class="form-body"><div class="form-grid">
@@ -557,7 +627,11 @@ td.ec-wrap{position:relative;min-width:60px}
       </div></div>
     </div>
   </div></div>
+  </div>
+
 </div>
+
+
 
 <!-- ══ LIST ══ -->
 <div class="tab-panel" id="panel-list">
@@ -709,6 +783,41 @@ td.ec-wrap{position:relative;min-width:60px}
 </div>
 
 </div><!-- /app -->
+
+<!-- テンプレート保存モーダル -->
+<div class="tmpl-modal" id="tmplModal">
+  <div class="tmpl-overlay" onclick="closeTmplSave()"></div>
+  <div class="tmpl-box">
+    <div class="tmpl-box-title">📋 テンプレートとして保存</div>
+    <div class="tmpl-box-field">
+      <label>テンプレート名 *</label>
+      <input type="text" id="tmplNameInput" placeholder="例：段ボール定期発注">
+    </div>
+    <div class="tmpl-box-field">
+      <label>商品名</label>
+      <input type="text" id="tmplItemName">
+    </div>
+    <div class="tmpl-box-field">
+      <label>発注先</label>
+      <input type="text" id="tmplSupInput">
+    </div>
+    <div class="tmpl-box-field">
+      <label>カテゴリ</label>
+      <select id="tmplCatInput"></select>
+    </div>
+    <div class="tmpl-box-field">
+      <label>数量・単位</label>
+      <div style="display:flex;gap:6px">
+        <input type="number" id="tmplQtyInput" placeholder="数量" style="flex:1">
+        <select id="tmplUnitInput" style="width:80px"><option>枚</option><option>個</option><option>本</option><option>箱</option><option>冊</option><option>ケース</option><option>kg</option><option>袋</option></select>
+      </div>
+    </div>
+    <div class="tmpl-box-actions">
+      <button onclick="closeTmplSave()">キャンセル</button>
+      <button class="tmpl-save-btn" onclick="saveTmpl()">💾 保存する</button>
+    </div>
+  </div>
+</div>
 
 <!-- DELETE MODAL -->
 
@@ -896,7 +1005,7 @@ async function loadFromGAS() {
     tk('⚠️ データの読み込みに失敗しました。ネットワークを確認してください。');
   }
   showLoadingOverlay(false);
-  updateStats(); renderList(); renderCal(); renderCatList(); renderSupList();
+  updateStats(); renderList(); renderCal(); renderCatList(); renderSupList(); initHistChips(); loadTmpls(); renderTmplChips(); updateEfSupList();
 }
 
 // ── GAS にデータを保存（create / update） ──
@@ -1661,7 +1770,8 @@ function renderSupList(){
       <div style="flex:1"><div class="sup-name">${s.name}</div>${s.pic?`<div class="sup-sub">担当：${s.pic}</div>`:''}</div>
       <div class="cat-actions"><div class="cat-btn" onclick="tk('編集')">✏️</div><div class="cat-btn" onclick="delSup(${s.id})">🗑️</div></div>
     </div>`).join('');
-}
+ updateEfSupList();}
+
 function addSup(){const n=document.getElementById('newSupInput').value.trim(),p=document.getElementById('newSupPic').value.trim();if(!n){tk('会社名を入力してください');return;}SUPPLIERS.push({id:Date.now(),name:n,pic:p});document.getElementById('newSupInput').value='';document.getElementById('newSupPic').value='';renderSupList();tk(`✅ 「${n}」を追加しました`);}
 function delSup(id){const s=SUPPLIERS.find(x=>x.id===id);if(!s||!confirm(`「${s.name}」を削除しますか？`))return;SUPPLIERS=SUPPLIERS.filter(x=>x.id!==id);renderSupList();tk(`🗑️ 「${s.name}」を削除しました`);}
 
@@ -1955,6 +2065,121 @@ document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',functio
 
 let _tt;
 function tk(msg){const el=document.getElementById('toastEl');el.innerHTML=msg;el.style.display='flex';clearTimeout(_tt);_tt=setTimeout(()=>el.style.display='none',3000);}
+
+
+// ════ フォームモード切替 ════
+function setFormMode(mode){
+  const easy   = document.getElementById('easyForm');
+  const detail = document.getElementById('detailForm');
+  document.getElementById('modeEasyBtn').classList.toggle('active', mode==='easy');
+  document.getElementById('modeDetailBtn').classList.toggle('active', mode==='detail');
+  easy.style.display   = mode==='easy'   ? '' : 'none';
+  detail.style.display = mode==='detail' ? '' : 'none';
+}
+
+// ════ かんたん入力 ════
+function submitEasy(){
+  const name = document.getElementById('efName').value.trim();
+  const hope = document.getElementById('efHope').value;
+  if(!name){ tk('⚠️ 商品名を入力してください'); return; }
+  if(!hope){ tk('⚠️ 納品希望日を入力してください'); return; }
+  const sup  = document.getElementById('efSup').value.trim() || '';
+  const od   = new Date().toISOString().slice(0,10);
+  const st   = sup ? 'ordered' : 'pending';
+  const newOrder = {
+    id: Date.now().toString(),
+    name, cat:'', qty:'', sup, od, hope,
+    confirm: null, st, pr:'mid', memo:'', timeslot:'',
+  };
+  tk('⏳ 登録中...');
+  _gasPost('create', { order: newOrder }).then(res=>{
+    if(!res.ok){ tk('⚠️ 登録に失敗しました'); return; }
+    ORDERS.push(newOrder);
+    document.getElementById('efName').value = '';
+    document.getElementById('efSup').value  = '';
+    document.getElementById('efHope').value = '';
+    updateStats(); renderList(); renderCal();
+    tk('✅ 登録しました！詳細は発注一覧でダブルクリックして編集できます。');
+  });
+}
+
+// ════ テンプレート機能 ════
+const TMPL_KEY = 'hanbai_tmpl_jimusho';
+let TMPLS = [];
+function loadTmpls(){
+  try{ TMPLS = JSON.parse(localStorage.getItem(TMPL_KEY)||'[]'); }catch{ TMPLS=[]; }
+}
+function saveTmpls(){ localStorage.setItem(TMPL_KEY, JSON.stringify(TMPLS)); }
+
+function renderTmplChips(){
+  const wrap = document.getElementById('tmplChips'); if(!wrap) return;
+  if(!TMPLS.length){
+    wrap.innerHTML='<span style="font-size:.68rem;color:var(--ink-muted)">テンプレートがありません。よく使う発注内容を保存しておくと便利です。</span>';
+    return;
+  }
+  wrap.innerHTML = TMPLS.map((t,i)=>`
+    <div class="tmpl-chip" onclick="applyTmpl(${i})">
+      <span>${t.icon||'📋'} ${t.label}</span>
+      <span class="tmpl-del" onclick="event.stopPropagation();deleteTmpl(${i})" title="削除">✕</span>
+    </div>`).join('');
+}
+
+function applyTmpl(i){
+  const t = TMPLS[i]; if(!t) return;
+  if(document.getElementById('efName')) document.getElementById('efName').value = t.name||'';
+  if(document.getElementById('efSup'))  document.getElementById('efSup').value  = t.sup||'';
+  if(document.getElementById('fName')) document.getElementById('fName').value = t.name||'';
+  if(document.getElementById('fSup'))  document.getElementById('fSup').value  = t.sup||'';
+  if(document.getElementById('fQty'))  document.getElementById('fQty').value  = t.qty||'';
+  if(t.unit){ const us=document.getElementById('fUnit'); if(us) [...us.options].forEach(o=>o.selected=(o.value===t.unit)); }
+  if(t.cat){  const cs=document.getElementById('catSelect'); if(cs) [...cs.options].forEach(o=>o.selected=(o.value===t.cat)); }
+  tk(`📋 「${t.label}」を読み込みました。希望納期を入力して登録してください。`);
+}
+
+function deleteTmpl(i){
+  if(!confirm(`「${TMPLS[i].label}」を削除しますか？`)) return;
+  TMPLS.splice(i,1); saveTmpls(); renderTmplChips();
+  tk('🗑️ テンプレートを削除しました');
+}
+
+function openTmplSave(){
+  const name = (document.getElementById('efName')||{}).value || (document.getElementById('fName')||{}).value || '';
+  const sup  = (document.getElementById('efSup')||{}).value  || (document.getElementById('fSup')||{}).value  || '';
+  const qty  = (document.getElementById('fQty')||{}).value   || '';
+  document.getElementById('tmplNameInput').value = name;
+  document.getElementById('tmplItemName').value  = name;
+  document.getElementById('tmplSupInput').value  = sup;
+  document.getElementById('tmplQtyInput').value  = qty;
+  const catSel = document.getElementById('tmplCatInput');
+  catSel.innerHTML = '<option value="">（カテゴリなし）</option>' +
+    CATEGORIES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  document.getElementById('tmplModal').classList.add('open');
+  setTimeout(()=>document.getElementById('tmplNameInput').focus(),100);
+}
+function closeTmplSave(){ document.getElementById('tmplModal').classList.remove('open'); }
+
+function saveTmpl(){
+  const label = document.getElementById('tmplNameInput').value.trim();
+  if(!label){ tk('⚠️ テンプレート名を入力してください'); return; }
+  const tmpl = {
+    label,
+    name: document.getElementById('tmplItemName').value.trim(),
+    sup:  document.getElementById('tmplSupInput').value.trim(),
+    cat:  document.getElementById('tmplCatInput').value,
+    qty:  document.getElementById('tmplQtyInput').value,
+    unit: document.getElementById('tmplUnitInput').value,
+    icon: '📋',
+  };
+  TMPLS.push(tmpl); saveTmpls(); renderTmplChips();
+  closeTmplSave();
+  tk(`✅ 「${label}」をテンプレートに保存しました`);
+}
+
+function updateEfSupList(){
+  const dl = document.getElementById('efSupList'); if(!dl) return;
+  const sups = [...new Set(SUPPLIERS.map(s=>s.name).concat(ORDERS.map(o=>o.sup)).filter(Boolean))];
+  dl.innerHTML = sups.map(s=>`<option value="${s}">`).join('');
+}
 
 // ════ INIT (GAS連携) ════
 loadFromGAS();
