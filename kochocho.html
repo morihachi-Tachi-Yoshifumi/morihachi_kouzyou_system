@@ -1248,6 +1248,22 @@ function tk(msg){const el=document.getElementById('toastEl');el.innerHTML=msg;el
 
 // ════ INIT (GAS連携) ════
 loadFromGAS();
+
+// ════ iOS Safari タッチ対応（全ページ共通） ════
+document.addEventListener('touchstart', function(){}, {passive:true});
+// span/divのonclick要素をタップ可能にする
+document.querySelectorAll('[onclick]').forEach(function(el){
+  if(el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'TD'){
+    el.style.cursor = 'pointer';
+    el.style.webkitTapHighlightColor = 'transparent';
+    var oc = el.getAttribute('onclick');
+    el.addEventListener('touchend', function(e){
+      e.preventDefault();
+      try{ eval(oc); }catch(err){}
+    }, {passive:false});
+  }
+});
+
 </script>
 </body>
 </html>

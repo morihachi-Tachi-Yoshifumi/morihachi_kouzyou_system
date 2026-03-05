@@ -696,7 +696,7 @@ td.ec-wrap{position:relative;min-width:60px}
         <div class="card-header">
           <span class="card-title">最近の発注</span>
           <span class="g-badge g-sheets">📊 Sheets</span>
-          <span class="card-action" onclick="sw('list',null)">すべて見る →</span>
+          <button class="card-action" style="border:none;background:none;font-family:inherit;cursor:pointer" onclick="sw('list',null)">すべて見る →</button>
         </div>
         <table class="tbl recent-as-card">
           <thead><tr><th>商品名</th><th>カテゴリ</th><th>発注数</th><th>納品希望日 / 確定納期</th><th>ステータス</th></tr></thead>
@@ -1994,33 +1994,62 @@ function tk(msg){const el=document.getElementById('toastEl');el.innerHTML=msg;el
 // ════ INIT ════
 loadFromGAS();
 
-// ════ iOS Safari タッチ対応 ════
-// iOSSafariはdelegated onclickが効かない場合があるため
-// document全体にtouchstartを空登録してclickを有効化する
+// ════ iOS Safari タッチ対応（全ページ共通） ════
 document.addEventListener('touchstart', function(){}, {passive:true});
+// span/divのonclick要素をタップ可能にする
+document.querySelectorAll('[onclick]').forEach(function(el){
+  if(el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'TD'){
+    el.style.cursor = 'pointer';
+    el.style.webkitTapHighlightColor = 'transparent';
+    var oc = el.getAttribute('onclick');
+    el.addEventListener('touchend', function(e){
+      e.preventDefault();
+      try{ eval(oc); }catch(err){}
+    }, {passive:false});
+  }
+});
+
+
+// ════ ボトムナビ タッチイベント登録（iOS Safari対応） ════
+(function(){
+  var btns = document.querySelectorAll('.bn-btn');
+  btns.forEach(function(btn){
+    // touchend で確実に反応させる
+    btn.addEventListener('touchend', function(e){
+      e.preventDefault(); // クリックイベントの重複を防ぐ
+      var panel = btn.getAttribute('data-panel');
+      if(panel){ sw(panel, null); bnSwitch(panel); }
+    }, {passive:false});
+    // PC用にclickも残す
+    btn.addEventListener('click', function(){
+      var panel = btn.getAttribute('data-panel');
+      if(panel){ sw(panel, null); bnSwitch(panel); }
+    });
+  });
+})();
 </script>
 
 <!-- ボトムナビ（スマホのみ） -->
 <div class="bottom-nav" id="bottomNav">
   <div class="bottom-nav-inner">
-    <button class="bn-btn active" id="bn-home" onclick="sw('home',null);bnSwitch('home')" style="position:relative">
+    <button class="bn-btn active" id="bn-home" data-panel="home" style="position:relative">
       <span class="bn-icon">🏠</span>
       <span class="bn-label">ホーム</span>
     </button>
-    <button class="bn-btn" id="bn-new" onclick="sw('new',null);bnSwitch('new')" style="position:relative">
+    <button class="bn-btn" id="bn-new" data-panel="new" style="position:relative">
       <span class="bn-icon">➕</span>
       <span class="bn-label">発注</span>
     </button>
-    <button class="bn-btn" id="bn-list" onclick="sw('list',null);bnSwitch('list')" style="position:relative">
+    <button class="bn-btn" id="bn-list" data-panel="list" style="position:relative">
       <span class="bn-icon">📋</span>
       <span class="bn-label">一覧</span>
       <span class="bn-badge" id="bn-late-badge" style="display:none">!</span>
     </button>
-    <button class="bn-btn" id="bn-history" onclick="sw('history',null);bnSwitch('history')">
+    <button class="bn-btn" id="bn-history" data-panel="history">
       <span class="bn-icon">🕐</span>
       <span class="bn-label">履歴</span>
     </button>
-    <button class="bn-btn" id="bn-settings" onclick="sw('settings',null);bnSwitch('settings')">
+    <button class="bn-btn" id="bn-settings" data-panel="settings">
       <span class="bn-icon">⚙️</span>
       <span class="bn-label">設定</span>
     </button>
