@@ -61,11 +61,12 @@ function setupSheets() {
       sheet.setColumnWidth(11, 200); // 備考
       sheet.setColumnWidth(12, 90);  // 時間帯
 
-      // 日付列（発注日F・希望納期G・確定納期H）をテキスト形式に設定
-      // → Sheetsが日付を自動変換しないようにする
+      // 日付列（発注日F・希望納期G・確定納期H）と時間帯列（L）をテキスト形式に設定
+      // → Sheetsが値を日付に自動変換しないようにする
       const textFormat = SpreadsheetApp.newTextStyle().build();
       const numFmt = '@STRING@'; // テキスト書式
       sheet.getRange('F:H').setNumberFormat('@');
+      sheet.getRange('L:L').setNumberFormat('@');
     }
   });
 
@@ -244,14 +245,19 @@ function orderToRow(o) {
 function fmtDate(v) {
   if (!v) return '';
   if (v instanceof Date) {
-    // Dateオブジェクト → YYYY-MM-DD（スプレッドシートのタイムゾーンで解釈）
     const y = v.getFullYear();
     const m = String(v.getMonth() + 1).padStart(2, '0');
     const d = String(v.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   }
-  // 文字列の場合は先頭10文字だけ取る（ISO形式の時刻部分を除去）
   return String(v).slice(0, 10);
+}
+
+// 日付以外のフィールド用：Dateオブジェクトが来たら空文字、それ以外は文字列化
+function safeStr(v) {
+  if (!v && v !== 0) return '';
+  if (v instanceof Date) return ''; // Sheetsが誤変換した場合は空に
+  return String(v);
 }
 
 function rowToOrder(row) {
@@ -267,7 +273,7 @@ function rowToOrder(row) {
     st:       row[8]  || 'ordered',
     pr:       row[9]  || 'mid',
     memo:     row[10] || '',
-    timeslot: String(row[11] || ''),
+    timeslot: safeStr(row[11]),
   };
 }
 
