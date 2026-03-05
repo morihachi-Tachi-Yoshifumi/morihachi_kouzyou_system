@@ -20,7 +20,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Noto Sans JP',sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6}
-.app{display:flex;height:100vh;overflow:hidden;flex-direction:column}
+.app{display:flex;height:100vh;overflow:hidden;flex-direction:column;position:relative}
 
 /* ── TOPBAR ── */
 .topbar{background:var(--ink);display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:3px solid var(--dept-color);flex-shrink:0;height:56px}
@@ -422,7 +422,7 @@ td.ec-wrap{position:relative;min-width:60px}
   height:60px;
   background:var(--ink);
   border-top:1px solid rgba(255,255,255,.1);
-  z-index:150;
+  z-index:9000;
   padding-bottom:env(safe-area-inset-bottom);
 }
 .bottom-nav-inner{
@@ -455,8 +455,8 @@ td.ec-wrap{position:relative;min-width:60px}
   .tab-bar{ display:none; }
 
   /* コンテンツ下余白（ボトムナビ分） */
-  .app{ padding-bottom:60px; }
-  .tab-panel{ padding-bottom:env(safe-area-inset-bottom); }
+  .app{ padding-bottom:0; }
+  .tab-panel{ padding-bottom:calc(60px + env(safe-area-inset-bottom)); }
 
   /* トップバー簡略化 */
   .topbar{ padding:0 14px; height:50px; }
