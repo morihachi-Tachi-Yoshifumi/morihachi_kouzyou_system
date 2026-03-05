@@ -19,7 +19,7 @@
   --dept-color:#1a56db;--dept-color-pale:#dce8ff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Noto Sans JP',sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;cursor:pointer}
+html,body{height:100%;font-family:'Noto Sans JP',sans-serif;background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6}
 .app{display:flex;height:100vh;overflow:hidden;flex-direction:column}
 
 /* ── TOPBAR ── */
@@ -1993,29 +1993,34 @@ function tk(msg){const el=document.getElementById('toastEl');el.innerHTML=msg;el
 
 // ════ INIT ════
 loadFromGAS();
+
+// ════ iOS Safari タッチ対応 ════
+// iOSSafariはdelegated onclickが効かない場合があるため
+// document全体にtouchstartを空登録してclickを有効化する
+document.addEventListener('touchstart', function(){}, {passive:true});
 </script>
 
 <!-- ボトムナビ（スマホのみ） -->
 <div class="bottom-nav" id="bottomNav">
   <div class="bottom-nav-inner">
-    <button class="bn-btn active" id="bn-home" onclick="sw('home',null);bnSwitch('home')" ontouchend="this.onclick()" style="position:relative">
+    <button class="bn-btn active" id="bn-home" onclick="sw('home',null);bnSwitch('home')" style="position:relative">
       <span class="bn-icon">🏠</span>
       <span class="bn-label">ホーム</span>
     </button>
-    <button class="bn-btn" id="bn-new" onclick="sw('new',null);bnSwitch('new')" ontouchend="this.onclick()" style="position:relative">
+    <button class="bn-btn" id="bn-new" onclick="sw('new',null);bnSwitch('new')" style="position:relative">
       <span class="bn-icon">➕</span>
       <span class="bn-label">発注</span>
     </button>
-    <button class="bn-btn" id="bn-list" onclick="sw('list',null);bnSwitch('list')" ontouchend="this.onclick()" style="position:relative">
+    <button class="bn-btn" id="bn-list" onclick="sw('list',null);bnSwitch('list')" style="position:relative">
       <span class="bn-icon">📋</span>
       <span class="bn-label">一覧</span>
       <span class="bn-badge" id="bn-late-badge" style="display:none">!</span>
     </button>
-    <button class="bn-btn" id="bn-history" onclick="sw('history',null);bnSwitch('history')" ontouchend="this.onclick()">
+    <button class="bn-btn" id="bn-history" onclick="sw('history',null);bnSwitch('history')">
       <span class="bn-icon">🕐</span>
       <span class="bn-label">履歴</span>
     </button>
-    <button class="bn-btn" id="bn-settings" onclick="sw('settings',null);bnSwitch('settings')" ontouchend="this.onclick()">
+    <button class="bn-btn" id="bn-settings" onclick="sw('settings',null);bnSwitch('settings')">
       <span class="bn-icon">⚙️</span>
       <span class="bn-label">設定</span>
     </button>
