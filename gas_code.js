@@ -60,6 +60,12 @@ function setupSheets() {
       sheet.setColumnWidth(10, 80);  // 優先度
       sheet.setColumnWidth(11, 200); // 備考
       sheet.setColumnWidth(12, 90);  // 時間帯
+
+      // 日付列（発注日F・希望納期G・確定納期H）をテキスト形式に設定
+      // → Sheetsが日付を自動変換しないようにする
+      const textFormat = SpreadsheetApp.newTextStyle().build();
+      const numFmt = '@STRING@'; // テキスト書式
+      sheet.getRange('F:H').setNumberFormat('@');
     }
   });
 
@@ -217,15 +223,16 @@ function findRowById(sheet, id) {
 }
 
 function orderToRow(o) {
+  // 日付は必ず文字列で保存（Sheetsの自動変換を防ぐため先頭に ' は付けない、文字列のまま渡す）
   return [
     String(o.id   || ''),
     o.name        || '',
     o.cat         || '',
-    o.qty         || '',
+    String(o.qty  || ''),
     o.sup         || '',
-    o.od          || '',
-    o.hope        || '',
-    o.confirm     || '',
+    fmtDate(o.od),
+    fmtDate(o.hope),
+    fmtDate(o.confirm),
     o.st          || 'ordered',
     o.pr          || 'mid',
     o.memo        || '',
@@ -233,20 +240,34 @@ function orderToRow(o) {
   ];
 }
 
+// 日付値を YYYY-MM-DD 文字列に統一（DateオブジェクトもISO文字列も対応）
+function fmtDate(v) {
+  if (!v) return '';
+  if (v instanceof Date) {
+    // Dateオブジェクト → YYYY-MM-DD（スプレッドシートのタイムゾーンで解釈）
+    const y = v.getFullYear();
+    const m = String(v.getMonth() + 1).padStart(2, '0');
+    const d = String(v.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  // 文字列の場合は先頭10文字だけ取る（ISO形式の時刻部分を除去）
+  return String(v).slice(0, 10);
+}
+
 function rowToOrder(row) {
   return {
     id:       String(row[0]),
     name:     row[1]  || '',
     cat:      row[2]  || '',
-    qty:      row[3]  || '',
+    qty:      String(row[3] || ''),
     sup:      row[4]  || '',
-    od:       row[5]  || '',
-    hope:     row[6]  || '',
-    confirm:  row[7]  || null,
+    od:       fmtDate(row[5]),
+    hope:     fmtDate(row[6]),
+    confirm:  fmtDate(row[7]) || null,
     st:       row[8]  || 'ordered',
     pr:       row[9]  || 'mid',
     memo:     row[10] || '',
-    timeslot: row[11] || '',
+    timeslot: String(row[11] || ''),
   };
 }
 
