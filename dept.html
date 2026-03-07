@@ -1709,9 +1709,7 @@ function csvRow(o){
 function doExport(items, fname){
   if(!items.length){tk('エクスポートするデータがありません');return;}
   const hdr=['ID','商品名','カテゴリ','発注数','発注先','発注日','希望納期','確定納期','ステータス','優先度','備考'];
-  const csv='\uFEFF'+hdr.join(',')+'
-'+items.map(csvRow).join('
-');
+  const csv='\uFEFF'+hdr.join(',')+'\n'+items.map(csvRow).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download=fname; a.click();
