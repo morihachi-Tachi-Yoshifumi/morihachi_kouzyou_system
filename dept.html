@@ -1993,40 +1993,6 @@ function tk(msg){const el=document.getElementById('toastEl');el.innerHTML=msg;el
 
 // ════ INIT ════
 loadFromGAS();
-
-// ════ iOS Safari タッチ対応（全ページ共通） ════
-document.addEventListener('touchstart', function(){}, {passive:true});
-// span/divのonclick要素をタップ可能にする
-document.querySelectorAll('[onclick]').forEach(function(el){
-  if(el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'TD'){
-    el.style.cursor = 'pointer';
-    el.style.webkitTapHighlightColor = 'transparent';
-    var oc = el.getAttribute('onclick');
-    el.addEventListener('touchend', function(e){
-      e.preventDefault();
-      try{ eval(oc); }catch(err){}
-    }, {passive:false});
-  }
-});
-
-
-// ════ ボトムナビ タッチイベント登録（iOS Safari対応） ════
-(function(){
-  var btns = document.querySelectorAll('.bn-btn');
-  btns.forEach(function(btn){
-    // touchend で確実に反応させる
-    btn.addEventListener('touchend', function(e){
-      e.preventDefault(); // クリックイベントの重複を防ぐ
-      var panel = btn.getAttribute('data-panel');
-      if(panel){ sw(panel, null); bnSwitch(panel); }
-    }, {passive:false});
-    // PC用にclickも残す
-    btn.addEventListener('click', function(){
-      var panel = btn.getAttribute('data-panel');
-      if(panel){ sw(panel, null); bnSwitch(panel); }
-    });
-  });
-})();
 </script>
 
 <!-- ボトムナビ（スマホのみ） -->
@@ -2055,5 +2021,17 @@ document.querySelectorAll('[onclick]').forEach(function(el){
     </button>
   </div>
 </div>
+<script>
+// ボトムナビ タッチイベント（HTMLの後に配置することでDOM確実に存在）
+document.querySelectorAll('.bn-btn').forEach(function(btn){
+  btn.addEventListener('touchend', function(e){
+    e.preventDefault();
+    var panel = btn.getAttribute('data-panel');
+    if(panel){ sw(panel, null); bnSwitch(panel); }
+  }, {passive:false});
+});
+// iOS Safari: touchstart空登録でclickイベントを有効化
+document.addEventListener('touchstart', function(){}, {passive:true});
+</script>
 </body>
 </html>

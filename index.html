@@ -668,21 +668,10 @@ function renderSide(){
 rebuildAllOrders();
 renderHero(); renderDepts(); renderProd(); renderArri(); renderAlert(); renderSide();
 loadAllFromGAS();
-
-// ════ iOS Safari タッチ対応（全ページ共通） ════
+// ════ iOS Safari タッチ対応 ════
+// touchstart空登録でSafariのclickイベントを有効化する
 document.addEventListener('touchstart', function(){}, {passive:true});
-// span/divのonclick要素をタップ可能にする
-document.querySelectorAll('[onclick]').forEach(function(el){
-  if(el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'TD'){
-    el.style.cursor = 'pointer';
-    el.style.webkitTapHighlightColor = 'transparent';
-    var oc = el.getAttribute('onclick');
-    el.addEventListener('touchend', function(e){
-      e.preventDefault();
-      try{ eval(oc); }catch(err){}
-    }, {passive:false});
-  }
-});
+
 
 
 let _tt;

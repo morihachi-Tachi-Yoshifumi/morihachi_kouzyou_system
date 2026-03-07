@@ -1037,6 +1037,15 @@ function renderList(){
   updateActionBar();
 }
 
+function rowClick(e,id){
+  // チェックボックス自体のクリックは無視
+  if(e.target.type==='checkbox')return;
+  const checked=!selIds.has(id);
+  if(checked)selIds.add(id);else selIds.delete(id);
+  const cb=document.querySelector(`input[data-id="${id}"]`);if(cb)cb.checked=checked;
+  const row=e.currentTarget;row.classList.toggle('selected-row',checked);
+  updateActionBar();
+}
 function toggleRowCheck(id,checked){
   if(checked)selIds.add(id);else selIds.delete(id);
   updateActionBar();
@@ -1248,21 +1257,10 @@ function tk(msg){const el=document.getElementById('toastEl');el.innerHTML=msg;el
 
 // ════ INIT (GAS連携) ════
 loadFromGAS();
-
-// ════ iOS Safari タッチ対応（全ページ共通） ════
+// ════ iOS Safari タッチ対応 ════
+// touchstart空登録でSafariのclickイベントを有効化する
 document.addEventListener('touchstart', function(){}, {passive:true});
-// span/divのonclick要素をタップ可能にする
-document.querySelectorAll('[onclick]').forEach(function(el){
-  if(el.tagName === 'SPAN' || el.tagName === 'DIV' || el.tagName === 'TD'){
-    el.style.cursor = 'pointer';
-    el.style.webkitTapHighlightColor = 'transparent';
-    var oc = el.getAttribute('onclick');
-    el.addEventListener('touchend', function(e){
-      e.preventDefault();
-      try{ eval(oc); }catch(err){}
-    }, {passive:false});
-  }
-});
+
 
 </script>
 </body>
