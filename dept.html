@@ -605,6 +605,7 @@ td.ec-wrap{position:relative;min-width:60px}
     overflow-y:auto;
   }
   .edit-modal{ width:100%; max-width:100%; }
+  .modal-actions{ padding-bottom:calc(60px + env(safe-area-inset-bottom) + 16px); }
   .edit-row{ grid-template-columns:1fr; }
 
   /* デイパネル：フル幅 */
@@ -1331,6 +1332,7 @@ function openPanel(y,m,day,ords,hoped,confirmed){
   document.getElementById('dpCnt2').textContent=confirmed.length;
   switchDp(0);
   document.getElementById('overlay').classList.add('open');
+  bnHide();
 }
 function switchDp(idx){_dpTab=idx;document.querySelectorAll('.dp-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));renderDpBody();}
 function renderDpBody(){
@@ -1387,6 +1389,7 @@ function closePanel(e){
   if(e&&e.target!==document.getElementById('overlay')) return;
   document.getElementById('overlay').classList.remove('open');
   document.querySelectorAll('.cal-day').forEach(e=>e.classList.remove('selected'));
+  bnShow();
 }
 
 // ════ LIST ════
@@ -1577,6 +1580,7 @@ function ilCancel(row) {
 // ════ 編集モーダル ════
 let _editId = null;
 function openEditModal(id) {
+  bnHide();
   const o=ORDERS.find(x=>x.id===String(id)); if(!o) return;
   _editId = o.id;
   document.getElementById('em-name').value    = o.name    || '';
@@ -1595,6 +1599,7 @@ function openEditModal(id) {
 }
 function closeEditModal() {
   document.getElementById('editModal').classList.remove('open'); _editId=null;
+  bnShow();
 }
 function emTsSelect(btn) {
   document.querySelectorAll('.edit-ts-btn').forEach(b=>b.classList.remove('sel'));
@@ -1685,9 +1690,9 @@ function deleteSelected(){
   if(!selIds.size) return;
   const items=ORDERS.filter(o=>selIds.has(o.id));
   document.getElementById('deleteModalItems').innerHTML=items.map(o=>`<div class="modal-item">${o.name}（${o.sup} / 希望：${fmtMD(o.hope)}）</div>`).join('');
-  document.getElementById('deleteModal').classList.add('open');
+  bnHide(); document.getElementById('deleteModal').classList.add('open');
 }
-function closeDeleteModal(){document.getElementById('deleteModal').classList.remove('open');}
+function closeDeleteModal(){document.getElementById('deleteModal').classList.remove('open'); bnShow();}
 function confirmDelete(){
   const cnt=selIds.size; const ids=[...selIds];
   tk('⏳ 削除中...');
@@ -1951,10 +1956,11 @@ function openTmplSave(){
   document.getElementById('tmplQtyInput').value=qty;
   const catSel=document.getElementById('tmplCatInput');
   catSel.innerHTML='<option value="">（カテゴリなし）</option>'+CATEGORIES.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  bnHide();
   document.getElementById('tmplModal').classList.add('open');
   setTimeout(()=>document.getElementById('tmplNameInput').focus(),100);
 }
-function closeTmplSave(){document.getElementById('tmplModal').classList.remove('open');}
+function closeTmplSave(){document.getElementById('tmplModal').classList.remove('open'); bnShow();}
 function saveTmpl(){
   const label=document.getElementById('tmplNameInput').value.trim();
   if(!label){tk('⚠️ テンプレート名を入力してください');return;}
@@ -1968,6 +1974,10 @@ function updateEfSupList(){
   dl.innerHTML=sups.map(s=>`<option value="${s}">`).join('');
 }
 
+
+// ════ ボトムナビ 表示制御 ════
+function bnHide(){ const el=document.getElementById('bottomNav'); if(el) el.style.display='none'; }
+function bnShow(){ const el=document.getElementById('bottomNav'); if(el) el.style.display=''; }
 // ════ TAB SWITCH ════
 function sw(panel,el){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
